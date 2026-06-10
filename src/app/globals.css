@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Tipografía ─────────────────────────────────── */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* ── Paleta principal: Crema / Beige ────────────── */
+  --color-cream-50:  #FDFAF5;
+  --color-cream-100: #F8F2E6;
+  --color-cream-200: #F0E6D3;
+  --color-cream-300: #E8D9BF;
+  --color-cream-400: #DECCAA;
+  --color-cream-500: #D4BE96;
+
+  /* ── Rosa viejo / Dusty Rose ────────────────────── */
+  --color-rose-50:  #FDF4F0;
+  --color-rose-100: #F9E8E0;
+  --color-rose-200: #F0CEBC;
+  --color-rose-300: #E4AE95;
+  --color-rose-400: #D4906F;
+  --color-rose-500: #C4784E;
+  --color-rose-600: #B5643A;
+
+  /* ── Neutros cálidos (marrón / taupe) ───────────── */
+  --color-warm-50:  #F7F4F0;
+  --color-warm-100: #EDE7DE;
+  --color-warm-200: #D6C9BA;
+  --color-warm-300: #BBA898;
+  --color-warm-400: #9E8878;
+  --color-warm-500: #836859;
+  --color-warm-600: #6B5242;
+  --color-warm-700: #543E31;
+  --color-warm-800: #3E2C23;
+  --color-warm-900: #2C1E18;
+
+  /* ── Acento elegante (dorado suave) ─────────────── */
+  --color-gold-100: #F7EDD5;
+  --color-gold-200: #EDD5A0;
+  --color-gold-300: #DFBB6A;
+  --color-gold-400: #CCA048;
+  --color-gold-500: #B8882E;
+
+  /* ── Alias semánticos ───────────────────────────── */
+  --color-background: var(--color-cream-50);
+  --color-foreground: var(--color-warm-900);
+  --color-surface:    var(--color-cream-100);
+  --color-border:     var(--color-cream-300);
+  --color-primary:    var(--color-rose-400);
+  --color-primary-hover: var(--color-rose-500);
+  --color-accent:     var(--color-gold-300);
+  --color-muted:      var(--color-warm-400);
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-cream-50);
+  color: var(--color-warm-900);
+}
+
+* {
+  box-sizing: border-box;
+}
