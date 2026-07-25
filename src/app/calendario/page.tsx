@@ -3,6 +3,11 @@ import Link from "next/link";
 import { getPublicAppointmentAvailability } from "@/actions/appointments";
 import { AvailabilityCalendar } from "@/components/calendario/AvailabilityCalendar";
 
+// Always fetch live availability — this page must never serve a stale,
+// statically-cached snapshot, since appointments can change via the
+// Telegram bot at any time.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Calendario — ERIKAAUHINGMAKEUP",
 };
