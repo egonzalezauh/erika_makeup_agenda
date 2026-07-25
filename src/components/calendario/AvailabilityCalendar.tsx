@@ -121,17 +121,19 @@ export function AvailabilityCalendar({
               .map((slot, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between px-4 py-3 rounded-xl bg-cream-mid border border-cream-deep"
+                  className="px-4 py-3 rounded-xl bg-cream-mid border border-cream-deep"
                 >
-                  <span className="font-serif text-lg text-dark-charcoal">
-                    {slot.timeSlot}
-                  </span>
-                  <span className="text-sm text-charcoal-light">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="font-serif text-lg text-dark-charcoal">
+                      {slot.timeSlot}
+                    </span>
+                    <span className="shrink-0 text-xs font-medium text-muted-rose bg-muted-rose-light/30 px-2.5 py-0.5 rounded-full">
+                      Ocupado
+                    </span>
+                  </div>
+                  <p className="text-sm text-charcoal-light mt-1">
                     {slot.service.name}
-                  </span>
-                  <span className="text-xs font-medium text-muted-rose bg-muted-rose-light/30 px-2.5 py-0.5 rounded-full">
-                    Ocupado
-                  </span>
+                  </p>
                 </div>
               ))}
           </div>
