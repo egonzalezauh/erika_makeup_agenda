@@ -309,9 +309,11 @@ function WhatsAppBridge({
   const [name, setName] = useState("");
   const shortDate = date.split("-").reverse().join("/"); // "YYYY-MM-DD" -> "DD/MM/YYYY"
 
+  const trimmedName = name.trim();
+  const namePart = trimmedName ? ` Mi nombre es ${trimmedName}.` : "";
   const message =
-    `Hola! Me gustaría agendar: ${service?.name ?? ""} el ${shortDate} a las ${time}. ` +
-    `Mi nombre es: ${name.trim() || "___"}`;
+    `Hola! Buenas, me gustaría agendar: ${service?.name ?? ""} el ${shortDate} a las ${time}.` +
+    namePart;
 
   const waLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 
@@ -335,8 +337,8 @@ function WhatsAppBridge({
         ¡Ya casi! Un último paso
       </h2>
       <p className="text-charcoal-light text-sm max-w-sm mx-auto leading-relaxed">
-        Continúa por WhatsApp para coordinar tu cita directamente con
-        nosotras.
+        Continúa por WhatsApp para coordinar tu cita directamente
+        conmigo.
       </p>
 
       <div className="mt-6 max-w-sm mx-auto text-left">
