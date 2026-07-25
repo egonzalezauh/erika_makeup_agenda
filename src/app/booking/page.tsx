@@ -1,65 +1,62 @@
 import type { Metadata } from "next";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { BookingWizard } from "@/components/booking/BookingWizard";
+import { getServices } from "@/actions/appointments";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Agendar Cita",
+  title: "Agendar Cita — ERIKAAUHINGMAKEUP",
+  description: "Reserva tu cita de maquillaje y peinado de forma rápida y sencilla.",
 };
 
-export default function BookingPage() {
+export default async function BookingPage() {
+  const services = await getServices();
+
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6 py-16">
-      <div className="w-full max-w-lg space-y-8">
+    <>
+      <Navbar />
+
+      <main className="min-h-screen bg-cream-soft pt-24 pb-20 px-4">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center mb-12 max-w-xl mx-auto">
           <Link
             href="/"
-            className="inline-block text-sm opacity-50 hover:opacity-80 transition-opacity mb-2"
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-charcoal-light
+              hover:text-muted-rose transition-colors tracking-widest uppercase mb-6"
           >
-            ← Volver al inicio
+            <span>←</span> Volver al inicio
           </Link>
-          <h1 className="text-3xl font-semibold tracking-tight">
-            Agenda tu Cita
+          <h1 className="font-serif text-4xl md:text-5xl text-dark-charcoal leading-tight">
+            Agenda tu <em className="text-muted-rose not-italic">Cita</em>
           </h1>
-          <p className="opacity-60 text-sm">
-            Completa el formulario y nos pondremos en contacto contigo para
-            confirmar tu cita.
+          <p className="mt-3 text-sm text-charcoal-light max-w-sm mx-auto leading-relaxed">
+            Completa los pasos a continuación. Confirmaremos tu reserva por
+            WhatsApp o correo.
           </p>
+          {/* Gold divider */}
+          <div className="flex items-center justify-center gap-3 mt-6">
+            <div className="h-px w-10 bg-gold-accent" />
+            <div className="w-1 h-1 rounded-full bg-gold-accent" />
+            <div className="h-px w-10 bg-gold-accent" />
+          </div>
         </div>
 
-        {/* Form placeholder card */}
-        <div className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl p-8 space-y-5">
-          <div className="space-y-1">
-            <div className="h-4 w-24 rounded bg-[var(--color-border)]" />
-            <div className="h-10 w-full rounded-lg bg-[var(--color-cream-200)]" />
-          </div>
-          <div className="space-y-1">
-            <div className="h-4 w-32 rounded bg-[var(--color-border)]" />
-            <div className="h-10 w-full rounded-lg bg-[var(--color-cream-200)]" />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <div className="h-4 w-16 rounded bg-[var(--color-border)]" />
-              <div className="h-10 rounded-lg bg-[var(--color-cream-200)]" />
+        {/* Wizard */}
+        <div className="max-w-3xl mx-auto bg-white/70 backdrop-blur-sm rounded-3xl border border-cream-deep shadow-sm p-6 md:p-10">
+          {services.length === 0 ? (
+            <div className="text-center py-16">
+              <p className="text-charcoal-light text-sm">
+                No hay servicios disponibles en este momento.
+              </p>
             </div>
-            <div className="space-y-1">
-              <div className="h-4 w-16 rounded bg-[var(--color-border)]" />
-              <div className="h-10 rounded-lg bg-[var(--color-cream-200)]" />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <div className="h-4 w-28 rounded bg-[var(--color-border)]" />
-            <div className="h-24 w-full rounded-lg bg-[var(--color-cream-200)]" />
-          </div>
-
-          <div className="pt-2">
-            <div className="h-11 w-full rounded-full bg-[var(--color-primary)] opacity-60" />
-          </div>
-
-          <p className="text-center text-xs opacity-40">
-            Formulario de citas — próximamente funcional
-          </p>
+          ) : (
+            <BookingWizard services={services} />
+          )}
         </div>
-      </div>
-    </main>
+      </main>
+
+      <Footer />
+    </>
   );
 }

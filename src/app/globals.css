@@ -1,55 +1,39 @@
 @import "tailwindcss";
 
 @theme {
-  /* ── Tipografía ─────────────────────────────────── */
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Fuentes ──────────────────────────────────────── */
+  --font-serif: var(--font-cormorant), "Georgia", serif;
+  --font-sans:  var(--font-dm-sans), "Helvetica Neue", Arial, sans-serif;
 
-  /* ── Paleta principal: Crema / Beige ────────────── */
-  --color-cream-50:  #FDFAF5;
-  --color-cream-100: #F8F2E6;
-  --color-cream-200: #F0E6D3;
-  --color-cream-300: #E8D9BF;
-  --color-cream-400: #DECCAA;
-  --color-cream-500: #D4BE96;
+  /* ── Crema / Arena ────────────────────────────────── */
+  --color-cream-soft:  #F6F1E9;   /* fondo principal */
+  --color-cream-mid:   #EDE6D8;   /* superficies */
+  --color-cream-deep:  #DDD3C1;   /* bordes, separadores */
 
-  /* ── Rosa viejo / Dusty Rose ────────────────────── */
-  --color-rose-50:  #FDF4F0;
-  --color-rose-100: #F9E8E0;
-  --color-rose-200: #F0CEBC;
-  --color-rose-300: #E4AE95;
-  --color-rose-400: #D4906F;
-  --color-rose-500: #C4784E;
-  --color-rose-600: #B5643A;
+  /* ── Carbón cálido (textos) ───────────────────────── */
+  --color-dark-charcoal:   #1A1614;   /* texto principal */
+  --color-charcoal-mid:    #3A342F;   /* texto secundario */
+  --color-charcoal-light:  #7A6E66;   /* texto muted */
 
-  /* ── Neutros cálidos (marrón / taupe) ───────────── */
-  --color-warm-50:  #F7F4F0;
-  --color-warm-100: #EDE7DE;
-  --color-warm-200: #D6C9BA;
-  --color-warm-300: #BBA898;
-  --color-warm-400: #9E8878;
-  --color-warm-500: #836859;
-  --color-warm-600: #6B5242;
-  --color-warm-700: #543E31;
-  --color-warm-800: #3E2C23;
-  --color-warm-900: #2C1E18;
+  /* ── Rosa viejo / Dusty Rose ──────────────────────── */
+  --color-muted-rose:       #BF7A62;   /* acento primario */
+  --color-muted-rose-light: #E8C4B4;   /* versión suave */
+  --color-muted-rose-dark:  #9A5C44;   /* hover / active */
 
-  /* ── Acento elegante (dorado suave) ─────────────── */
-  --color-gold-100: #F7EDD5;
-  --color-gold-200: #EDD5A0;
-  --color-gold-300: #DFBB6A;
-  --color-gold-400: #CCA048;
-  --color-gold-500: #B8882E;
+  /* ── Dorado elegante ──────────────────────────────── */
+  --color-gold-accent: #C9A55E;   /* detalles dorados */
+  --color-gold-light:  #E8D5A8;   /* dorado suave */
+  --color-gold-dark:   #A07D38;   /* dorado profundo */
 
-  /* ── Alias semánticos ───────────────────────────── */
-  --color-background: var(--color-cream-50);
-  --color-foreground: var(--color-warm-900);
-  --color-surface:    var(--color-cream-100);
-  --color-border:     var(--color-cream-300);
-  --color-primary:    var(--color-rose-400);
-  --color-primary-hover: var(--color-rose-500);
-  --color-accent:     var(--color-gold-300);
-  --color-muted:      var(--color-warm-400);
+  /* ── Alias semánticos ─────────────────────────────── */
+  --color-background:     var(--color-cream-soft);
+  --color-foreground:     var(--color-dark-charcoal);
+  --color-surface:        var(--color-cream-mid);
+  --color-border:         var(--color-cream-deep);
+  --color-primary:        var(--color-muted-rose);
+  --color-primary-hover:  var(--color-muted-rose-dark);
+  --color-accent:         var(--color-gold-accent);
+  --color-muted:          var(--color-charcoal-light);
 }
 
 :root {
@@ -57,10 +41,26 @@
 }
 
 body {
-  background-color: var(--color-cream-50);
-  color: var(--color-warm-900);
+  background-color: var(--color-cream-soft);
+  color: var(--color-dark-charcoal);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* ── Ticker / marquee animation ───────────────────────── */
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.ticker-animate {
+  animation: ticker 28s linear infinite;
+  will-change: transform;
+}
+
+/* ── Smooth scroll ────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
 }

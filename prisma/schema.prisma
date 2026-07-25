@@ -1,0 +1,53 @@
+// ─── Generador ──────────────────────────────────────────────────
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Fuente de datos (Supabase PostgreSQL) ────────────────────────
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Modelo: Servicio ────────────────────────────────────────────
+// Catálogo de servicios que ofrece el negocio de maquillaje.
+model Service {
+  id          String  @id @default(uuid())
+  name        String
+  description String
+  price       Float
+  duration    Int     // duración en minutos
+  imageUrl    String?
+
+  // Relación 1-a-muchos con citas
+  appointments Appointment[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+// ─── Modelo: Cita ────────────────────────────────────────────────
+// Representa una cita agendada por un cliente.
+// status: PENDIENTE | CONFIRMADA | CANCELADA | COMPLETADA
+model Appointment {
+  id          String   @id @default(uuid())
+  clientName  String
+  clientEmail String
+  clientPhone String
+  date        DateTime // fecha del turno (sin hora — la hora va en timeSlot)
+  timeSlot    String   // ej. "10:00", "14:30"
+  notes       String?
+  status      String   @default("PENDIENTE")
+
+  // Relación con el servicio contratado
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("appointments")
+}
