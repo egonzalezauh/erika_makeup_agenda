@@ -75,12 +75,12 @@ export function HeroSection() {
           {/* Contenedor imagen principal */}
           <div className="absolute inset-0 overflow-hidden">
             <Image
-              src="/images/novia_mirando_arriba.jpeg"
-              alt="Maquillaje de novia profesional"
+              src="/images/Erika1.jpeg"
+              alt="Erika Auhing, maquillista profesional"
               fill
               unoptimized
               className="object-cover"
-              style={{ objectPosition: "center 15%" }}
+              style={{ objectPosition: "85% 15%" }}
               priority
             />
             {/* Overlay sutil para que el badge sea legible */}
@@ -92,10 +92,10 @@ export function HeroSection() {
             {/* Badge flotante */}
             <div className="absolute bottom-12 left-10 bg-cream-soft/92 backdrop-blur-sm p-5 max-w-[190px] shadow-[0_2px_20px_rgba(26,22,20,0.08)]">
               <p className="text-[9px] tracking-[0.3em] uppercase text-charcoal-light mb-2 font-sans">
-                Resultado real
+                Maquillista
               </p>
               <p className="font-serif text-sm text-dark-charcoal leading-snug">
-                Maquillaje de novia · 2024
+                Erika Auhing
               </p>
             </div>
           </div>
