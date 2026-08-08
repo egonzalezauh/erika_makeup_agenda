@@ -26,7 +26,7 @@ npx prisma studio                       # GUI to browse the database
 ## Architecture
 
 ### Data flow
-Server Actions in `src/actions/appointments.ts` are the only data-access layer. They call the Prisma singleton from `src/lib/prisma.ts` and call `revalidatePath("/calendario")` after mutations. There is **no authentication anywhere in the public app** — `createAppointment` and `updateAppointmentStatus` are not called by any page UI (the booking flow no longer writes to the DB); they're called exclusively by the Telegram bot webhook (`src/app/api/telegram/webhook/route.ts`), which is the only way appointments actually get created/changed. Bot access is gated by `TELEGRAM_ADMIN_CHAT_ID` (whitelist) and `TELEGRAM_WEBHOOK_SECRET` (request authenticity), not by the app's page routing.
+Server Actions in `src/actions/appointments.ts` are the only data-access layer. They call the Prisma singleton from `src/lib/prisma.ts` and call `revalidatePath("/calendario")` after mutations. There is **no authentication anywhere in the public app** — `createAppointment` and `updateAppointmentStatus` are not called by any page UI (the booking flow no longer writes to the DB); they're called exclusively by the Telegram bot webhook (`src/app/api/telegram/webhook/route.ts`), which is the only way appointments actually get created/changed. Bot access is gated by `TELEGRAM_ADMIN_CHAT_IDS` (comma-separated whitelist) and `TELEGRAM_WEBHOOK_SECRET` (request authenticity), not by the app's page routing.
 
 ### Component split
 - **Async Server Components** fetch data directly: `ServicesSection`, `src/app/booking/page.tsx`, `src/app/calendario/page.tsx`

@@ -61,9 +61,12 @@ export async function POST(req: Request) {
     return new Response(null, { status: 200 });
   }
 
-  const adminChatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-  if (!adminChatId || String(chatId) !== adminChatId) {
-    // Not the business owner — ignore silently, no reply.
+  const adminChatIds = (process.env.TELEGRAM_ADMIN_CHAT_IDS ?? "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+  if (!adminChatIds.includes(String(chatId))) {
+    // Not an authorized admin — ignore silently, no reply.
     return new Response(null, { status: 200 });
   }
 
