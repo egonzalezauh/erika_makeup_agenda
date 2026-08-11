@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 import { getPublicAppointmentAvailability } from "@/actions/appointments";
 import { AvailabilityCalendar } from "@/components/calendario/AvailabilityCalendar";
 
@@ -23,7 +25,10 @@ export default async function CalendarioPage() {
   });
 
   return (
-    <main className="min-h-screen bg-cream-soft px-4 py-24">
+    <>
+      <Navbar />
+
+      <main className="min-h-screen bg-cream-soft px-4 py-24">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
@@ -60,6 +65,9 @@ export default async function CalendarioPage() {
           </Link>
         </div>
       </div>
-    </main>
+      </main>
+
+      <Footer />
+    </>
   );
 }

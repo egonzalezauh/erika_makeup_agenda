@@ -1,11 +1,11 @@
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { href: "#servicios", label: "Servicios" },
-  { href: "#cursos",    label: "Cursos"    },
-  { href: "#galeria",   label: "Galería"   },
+  { href: "/#servicios", label: "Servicios" },
+  { href: "/#cursos",    label: "Cursos"    },
+  { href: "/#galeria",   label: "Galería"   },
   { href: "/calendario", label: "Calendario" },
-  { href: "#contacto",  label: "Contacto"  },
+  { href: "/#contacto",  label: "Contacto"  },
 ] as const;
 
 export function Navbar() {
