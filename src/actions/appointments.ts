@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { timeToMinutes, minutesToTime } from "@/lib/time";
 
 // ─── Tipos de entrada ────────────────────────────────────────────
 
@@ -16,12 +17,67 @@ export type CreateAppointmentInput = {
   status?:     "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
 };
 
+// ─── Solapamiento de horarios ──────────────────────────────────────
+// Una cita ocupa [timeSlot, timeSlot + service.duration), no solo el minuto
+// exacto en que empieza. Antes de crear o reactivar una cita hay que
+// verificar que ese rango no choque con ninguna otra cita activa (cualquier
+// estado salvo CANCELADA) ese mismo día.
+
+async function findConflictingAppointment(
+  date: string,
+  timeSlot: string,
+  durationMinutes: number,
+  excludeAppointmentId?: string
+) {
+  const start = new Date(date);
+  const end = new Date(date);
+  end.setDate(end.getDate() + 1);
+
+  const sameDay = await prisma.appointment.findMany({
+    where: {
+      date: { gte: start, lt: end },
+      status: { not: "CANCELADA" },
+      ...(excludeAppointmentId ? { id: { not: excludeAppointmentId } } : {}),
+    },
+    include: { service: true },
+  });
+
+  const newStart = timeToMinutes(timeSlot);
+  const newEnd = newStart + durationMinutes;
+
+  return (
+    sameDay.find((appt) => {
+      const existingStart = timeToMinutes(appt.timeSlot);
+      const existingEnd = existingStart + appt.service.duration;
+      return newStart < existingEnd && existingStart < newEnd;
+    }) ?? null
+  );
+}
+
+function describeConflict(conflict: { clientName: string; timeSlot: string; service: { name: string; duration: number } }) {
+  const endTime = minutesToTime(timeToMinutes(conflict.timeSlot) + conflict.service.duration);
+  return `${conflict.clientName} (${conflict.service.name}) de ${conflict.timeSlot} a ${endTime}`;
+}
+
 // ─── Acciones ────────────────────────────────────────────────────
 
 export async function createAppointment(
   data: CreateAppointmentInput
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+    if (!service) {
+      return { success: false, error: "Servicio no encontrado." };
+    }
+
+    const conflict = await findConflictingAppointment(data.date, data.timeSlot, service.duration);
+    if (conflict) {
+      return {
+        success: false,
+        error: `Ese horario choca con la cita de ${describeConflict(conflict)}. Elige otro horario.`,
+      };
+    }
+
     await prisma.appointment.create({
       data: {
         clientName:  data.clientName,
@@ -59,7 +115,7 @@ export async function getPublicAppointmentAvailability() {
       date: true,
       timeSlot: true,
       status: true,
-      service: { select: { name: true } },
+      service: { select: { name: true, duration: true } },
     },
     orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
   });
@@ -96,6 +152,33 @@ export async function updateAppointmentStatus(
   status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA"
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Reabrir una cita cancelada la vuelve a poner activa — hay que revisar
+    // que el horario no se haya ocupado con otra cita mientras tanto.
+    if (status !== "CANCELADA") {
+      const current = await prisma.appointment.findUnique({
+        where: { id },
+        include: { service: true },
+      });
+      if (!current) {
+        return { success: false, error: "Cita no encontrada." };
+      }
+      if (current.status === "CANCELADA") {
+        const dateStr = current.date.toISOString().split("T")[0];
+        const conflict = await findConflictingAppointment(
+          dateStr,
+          current.timeSlot,
+          current.service.duration,
+          id
+        );
+        if (conflict) {
+          return {
+            success: false,
+            error: `No se puede reabrir: choca con la cita de ${describeConflict(conflict)}.`,
+          };
+        }
+      }
+    }
+
     await prisma.appointment.update({
       where: { id },
       data:  { status },

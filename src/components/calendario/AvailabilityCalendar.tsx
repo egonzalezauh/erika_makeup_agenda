@@ -5,12 +5,13 @@ import {
   CalendarGrid,
   formatDisplayDate,
 } from "@/components/shared/CalendarGrid";
+import { timeToMinutes, minutesToTime } from "@/lib/time";
 
 type PublicAppointment = {
   date: Date;
   timeSlot: string;
   status: string;
-  service: { name: string };
+  service: { name: string; duration: number };
 };
 
 // Dates arrive as UTC-midnight ISO strings from Prisma/Next.js serialization.
@@ -125,7 +126,7 @@ export function AvailabilityCalendar({
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="font-serif text-[clamp(1.125rem,1.3vw,1.6rem)] text-dark-charcoal">
-                      {slot.timeSlot}
+                      {slot.timeSlot} – {minutesToTime(timeToMinutes(slot.timeSlot) + slot.service.duration)}
                     </span>
                     <span className="shrink-0 text-[clamp(12px,0.65vw,15px)] font-medium text-muted-rose bg-muted-rose-light/30 px-2.5 py-0.5 rounded-full">
                       Ocupado

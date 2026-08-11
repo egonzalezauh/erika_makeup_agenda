@@ -6,6 +6,7 @@ import {
   CalendarGrid,
   formatDisplayDate,
 } from "@/components/shared/CalendarGrid";
+import { timeToMinutes, minutesToTime } from "@/lib/time";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -18,14 +19,37 @@ type Service = {
   imageUrl: string | null;
 };
 
+type PublicAppointment = {
+  date: Date;
+  timeSlot: string;
+  status: string;
+  service: { name: string; duration: number };
+};
+
 type WizardStep = 1 | 2 | "bridge";
+
+// Por ahora solo se marcan como ocupadas las horas que dura cada cita ya
+// agendada (igual que en /calendario) — sin proyectar hacia adelante según
+// la duración del servicio que se está por agendar. El bot de Telegram sigue
+// validando choques reales al confirmar la cita.
+function isSlotBusy(slot: string, dayAppointments: PublicAppointment[]): boolean {
+  const t = timeToMinutes(slot);
+  return dayAppointments.some((appt) => {
+    const existingStart = timeToMinutes(appt.timeSlot);
+    const existingEnd = existingStart + appt.service.duration;
+    return t >= existingStart && t < existingEnd;
+  });
+}
+
+// Dates arrive as UTC-midnight ISO strings from Prisma/Next.js serialization.
+function toDateKey(date: Date | string): string {
+  return new Date(date).toISOString().split("T")[0];
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TIME_SLOTS = [
-  "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00", "12:00",
-  "13:00", "14:00", "15:00", "16:00", "17:00", "18:00",
-];
+// Cada 30 min, de 05:00 a 18:00 inclusive.
+const TIME_SLOTS = Array.from({ length: 27 }, (_, i) => minutesToTime(5 * 60 + i * 30));
 
 const WHATSAPP_NUMBER = (
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""
@@ -197,6 +221,7 @@ function Step2DateTime({
   isDisabled,
   onBack,
   onNext,
+  appointmentsByDate,
 }: {
   year: number;
   month: number;
@@ -210,7 +235,9 @@ function Step2DateTime({
   isDisabled: (y: number, m: number, d: number) => boolean;
   onBack: () => void;
   onNext: () => void;
+  appointmentsByDate: Record<string, PublicAppointment[]>;
 }) {
+  const dayAppointments = selectedDate ? appointmentsByDate[selectedDate] ?? [] : [];
   return (
     <div>
       <div className="text-center mb-8">
@@ -232,6 +259,12 @@ function Step2DateTime({
           onPrevMonth={onPrevMonth}
           onNextMonth={onNextMonth}
           isDateDisabled={isDisabled}
+          dayAnnotations={Object.fromEntries(
+            Object.entries(appointmentsByDate).map(([date, appts]) => [
+              date,
+              { busyCount: appts.length },
+            ])
+          )}
         />
 
         {/* ── Time slots ── */}
@@ -252,13 +285,18 @@ function Step2DateTime({
             <div className="grid grid-cols-3 gap-2">
               {TIME_SLOTS.map((slot) => {
                 const isSelected = selectedTime === slot;
+                const isBusy = isSlotBusy(slot, dayAppointments);
                 return (
                   <button
                     key={slot}
+                    disabled={isBusy}
                     onClick={() => onSelectTime(slot)}
+                    title={isBusy ? "Horario ocupado" : undefined}
                     className={`py-2.5 md:py-3 rounded-xl text-[clamp(14px,0.9vw,18px)] font-medium transition-all duration-150 border
                       ${
-                        isSelected
+                        isBusy
+                          ? "bg-cream-deep/60 border-cream-deep text-charcoal-light/50 line-through cursor-not-allowed"
+                          : isSelected
                           ? "bg-muted-rose text-white border-muted-rose shadow-sm"
                           : "bg-cream-mid border-cream-deep text-dark-charcoal hover:border-muted-rose-light hover:text-muted-rose"
                       }`}
@@ -418,7 +456,13 @@ function WhatsAppBridge({
 
 // ── Main exported component ───────────────────────────────────────────────────
 
-export function BookingWizard({ services }: { services: Service[] }) {
+export function BookingWizard({
+  services,
+  appointments,
+}: {
+  services: Service[];
+  appointments: PublicAppointment[];
+}) {
   const today = useMemo(() => new Date(), []);
 
   const [step, setStep] = useState<WizardStep>(1);
@@ -430,6 +474,16 @@ export function BookingWizard({ services }: { services: Service[] }) {
 
   const selectedService =
     services.find((s) => s.id === selectedServiceId) ?? null;
+
+  const appointmentsByDate = useMemo(() => {
+    const map: Record<string, PublicAppointment[]> = {};
+    for (const appt of appointments) {
+      const key = toDateKey(appt.date);
+      if (!map[key]) map[key] = [];
+      map[key].push(appt);
+    }
+    return map;
+  }, [appointments]);
 
   function handleSelectDate(dateStr: string) {
     setSelectedDate(dateStr);
@@ -509,6 +563,7 @@ export function BookingWizard({ services }: { services: Service[] }) {
           isDisabled={isDateDisabled}
           onBack={() => setStep(1)}
           onNext={() => setStep("bridge")}
+          appointmentsByDate={appointmentsByDate}
         />
       )}
     </div>

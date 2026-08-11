@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { BookingWizard } from "@/components/booking/BookingWizard";
-import { getServices } from "@/actions/appointments";
+import { getServices, getPublicAppointmentAvailability } from "@/actions/appointments";
 import Link from "next/link";
+
+export const dynamic = "force-dynamic"; // nunca servir disponibilidad obsoleta
 
 export const metadata: Metadata = {
   title: "Agendar Cita — ERIKAAUHINGMAKEUP",
@@ -11,7 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function BookingPage() {
-  const services = await getServices();
+  const [services, appointments] = await Promise.all([
+    getServices(),
+    getPublicAppointmentAvailability(),
+  ]);
 
   return (
     <>
@@ -51,7 +56,7 @@ export default async function BookingPage() {
               </p>
             </div>
           ) : (
-            <BookingWizard services={services} />
+            <BookingWizard services={services} appointments={appointments} />
           )}
         </div>
       </main>
