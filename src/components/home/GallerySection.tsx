@@ -3,9 +3,14 @@
   Row 1: [ Novia: row-span-2 ] [ Look social ] [ Quinceañera ]
   Row 2: [ Novia: cont.      ] [ Sesión foto ] [ Editorial   ]
 
-  auto-rows-[360px] en desktop → celdas simples ~434×360px (ratio 1.2:1, casi cuadrado).
+  Las celdas usan aspect-ratio (no una altura fija en px) para que la proporción
+  ancho:alto se mantenga constante sin importar qué tan ancho sea el contenedor
+  (este puede llegar hasta max-w-[2200px]). Con una altura fija, contenedores más
+  anchos volvían las celdas más panorámicas y recortaban de más las fotos
+  verticales (cortando cabezas). Ratios calculados sobre el diseño original
+  validado a 1440px de contenedor: celda simple 472×480 (~0.983:1), celda Novia
+  (row-span-2) 472×972 (~0.486:1).
   Con objectPosition:"top" las fotos portrait muestran cara completa sin cortar el mentón.
-  La celda Novia (row-span-2) queda ~434×732px (portrait) — perfecta para foto de perfil.
 */
 import Image from "next/image";
 
@@ -50,7 +55,7 @@ const GALLERY_ITEMS = [
 export function GallerySection() {
   return (
     <section id="galeria" className="py-24 md:py-36 px-6 md:px-14 bg-cream-mid/25">
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[2200px] mx-auto">
 
         {/* Encabezado */}
         <div className="flex items-end justify-between mb-12 md:mb-16">
@@ -58,7 +63,7 @@ export function GallerySection() {
             <span className="block text-[10px] tracking-[0.35em] uppercase text-charcoal-light font-sans mb-3">
               — Portafolio
             </span>
-            <h2 className="font-serif text-[clamp(2.2rem,5vw,3.8rem)] font-light text-dark-charcoal leading-tight">
+            <h2 className="font-serif text-[clamp(2.2rem,4vw,5rem)] font-light text-dark-charcoal leading-tight">
               Galería
             </h2>
           </div>
@@ -74,11 +79,11 @@ export function GallerySection() {
         </div>
 
         {/* Grid mosaico */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-[220px] md:auto-rows-[480px]">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 auto-rows-[220px] md:auto-rows-auto">
           {GALLERY_ITEMS.map((item, i) => (
             <div
               key={i}
-              className={`${item.span} relative overflow-hidden group cursor-pointer`}
+              className={`${item.span} ${item.span ? "md:aspect-[472/972]" : "md:aspect-[472/480]"} relative overflow-hidden group cursor-pointer`}
             >
               <Image
                 src={item.src}

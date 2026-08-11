@@ -8,7 +8,7 @@ async function main() {
   await prisma.appointment.deleteMany();
   await prisma.service.deleteMany();
 
-  const [social, quince, novia] = await Promise.all([
+  const [social, quince, novia, artistico, curso] = await Promise.all([
     prisma.service.create({
       data: {
         name: "Maquillaje y Peinado Social",
@@ -24,7 +24,7 @@ async function main() {
         duration: 90,
         price: 95.0,
         description:
-          "Incluye preparación de piel, pestañas en banda o individuales, peinado a elección recogido o semi-recogido con ondas, maquillaje blindado.",
+          "Incluye preparación de piel, pestañas en banda o individuales, peinado a elección recogido o semi-recogido con ondas, maquillaje de larga duración.",
       },
     }),
     prisma.service.create({
@@ -33,13 +33,31 @@ async function main() {
         duration: 120,
         price: 150.0,
         description:
-          "Preparación de piel con mascarilla hidratante, peinado a elección (tocado y velo aplicado), pestañas postizas. Productos de alta gama con técnica de blindaje o aerógrafo.",
+          "Preparación de piel (incluye mascarilla hidratante), pestañas individuales, productos de alta gama con técnica de blindaje para una larga duración; puedes elegir la técnica con aerógrafo. Peinado a tu elección (te dejamos aplicado el velo y el tocado).",
+      },
+    }),
+    prisma.service.create({
+      data: {
+        name: "Maquillaje Artístico",
+        duration: 120,
+        price: 60.0,
+        description:
+          "Convierte tu idea en una obra de arte. El maquillaje artístico está diseñado para quienes buscan impactar y expresar creatividad a través de diseños únicos y personalizados. Ideal para sesiones fotográficas, producciones audiovisuales, eventos temáticos, Halloween, editoriales y presentaciones de baile.",
+      },
+    }),
+    prisma.service.create({
+      data: {
+        name: "Curso de Automaquillaje",
+        duration: 240,
+        price: 50.0,
+        description:
+          "Aprende a maquillarte con tus propias manos: preparación de piel, corrección, contorno, ojos y aplicación de pestañas, con técnicas profesionales adaptadas a tu rostro. Sesión práctica, con productos de alta gama incluidos.",
       },
     }),
   ]);
 
   console.log("✅ Servicios creados:");
-  for (const s of [social, quince, novia]) {
+  for (const s of [social, quince, novia, artistico, curso]) {
     console.log(`   • ${s.name} — $${s.price} / ${s.duration} min`);
   }
 }

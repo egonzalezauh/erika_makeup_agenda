@@ -15,23 +15,23 @@ export function HeroSection() {
         {/* Etiqueta superior */}
         <div className="flex items-center gap-3 mb-10 md:mb-14">
           <span className="block w-10 h-px bg-gold-accent shrink-0" />
-          <span className="text-[9px] tracking-[0.35em] uppercase text-charcoal-light font-sans">
+          <span className="text-[clamp(12px,0.9vw,18px)] tracking-[0.35em] uppercase text-charcoal-light font-sans">
             Maquillaje Profesional · Guayaquil
           </span>
         </div>
 
         {/* Titular principal */}
         <h1 className="font-serif font-light text-dark-charcoal leading-[0.92] tracking-tight mb-6 md:mb-8 select-none">
-          <span className="block text-[clamp(4rem,9vw,7.5rem)]">Resalta</span>
-          <span className="block text-[clamp(4rem,9vw,7.5rem)] italic">tu</span>
-          <span className="block text-[clamp(4rem,9vw,7.5rem)]">esencia.</span>
+          <span className="block text-[clamp(4rem,8vw,13rem)]">Resalta</span>
+          <span className="block text-[clamp(4rem,8vw,13rem)] italic">tu</span>
+          <span className="block text-[clamp(4rem,8vw,13rem)]">esencia.</span>
         </h1>
 
         {/* Línea dorada decorativa */}
         <div className="w-14 h-px bg-gold-accent mb-8 md:mb-10" />
 
         {/* Subtexto */}
-        <p className="font-sans text-[13px] leading-[1.9] text-charcoal-light max-w-[300px] mb-10 md:mb-14">
+        <p className="font-sans text-[clamp(17px,1.3vw,23px)] leading-[1.7] text-charcoal-light max-w-[480px] mb-10 md:mb-14">
           Transformamos tu mirada con técnicas de maquillaje profesional diseñadas
           para cada momento especial de tu vida.
         </p>
@@ -40,14 +40,14 @@ export function HeroSection() {
         <div className="flex flex-wrap items-center gap-6 mb-14 md:mb-20">
           <Link
             href="/booking"
-            className="inline-flex items-center gap-3 bg-dark-charcoal text-cream-soft px-8 py-4 text-[10px] tracking-[0.25em] uppercase hover:bg-muted-rose transition-colors duration-300 group font-sans"
+            className="inline-flex items-center gap-3 bg-dark-charcoal text-cream-soft px-8 py-4 text-[clamp(13px,1vw,18px)] tracking-[0.25em] uppercase hover:bg-muted-rose transition-colors duration-300 group font-sans"
           >
             Agendar Cita
             <span className="block w-4 h-px bg-cream-soft/50 group-hover:w-7 transition-all duration-300" />
           </Link>
           <Link
             href="#servicios"
-            className="text-[10px] tracking-[0.2em] uppercase text-charcoal-mid border-b border-charcoal-mid/30 pb-px hover:text-muted-rose hover:border-muted-rose transition-colors duration-200 font-sans"
+            className="text-[clamp(13px,1vw,18px)] tracking-[0.2em] uppercase text-charcoal-mid border-b border-charcoal-mid/30 pb-px hover:text-muted-rose hover:border-muted-rose transition-colors duration-200 font-sans"
           >
             Explorar servicios
           </Link>
@@ -90,11 +90,11 @@ export function HeroSection() {
             <div className="absolute bottom-0 left-0 right-24 h-px bg-gold-accent/25" />
 
             {/* Badge flotante */}
-            <div className="absolute bottom-12 left-10 bg-cream-soft/92 backdrop-blur-sm p-5 max-w-[190px] shadow-[0_2px_20px_rgba(26,22,20,0.08)]">
-              <p className="text-[9px] tracking-[0.3em] uppercase text-charcoal-light mb-2 font-sans">
+            <div className="absolute bottom-12 left-10 bg-cream-soft/92 backdrop-blur-sm p-6 md:p-8 max-w-[320px] shadow-[0_2px_20px_rgba(26,22,20,0.08)]">
+              <p className="text-[clamp(11px,0.8vw,16px)] tracking-[0.3em] uppercase text-charcoal-light mb-2 font-sans">
                 Maquillista
               </p>
-              <p className="font-serif text-sm text-dark-charcoal leading-snug">
+              <p className="font-serif text-[clamp(1.2rem,1.8vw,2.4rem)] text-dark-charcoal leading-snug">
                 Erika Auhing
               </p>
             </div>

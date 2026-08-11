@@ -79,24 +79,24 @@ export function CalendarGrid({
   while (cells.length % 7 !== 0) cells.push(null);
 
   return (
-    <div className="bg-cream-mid rounded-2xl p-5 border border-cream-deep">
+    <div className="bg-cream-mid rounded-2xl p-5 md:p-7 border border-cream-deep">
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
         <button
           onClick={onPrevMonth}
           disabled={!canGoPrev}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-deep transition-colors
-            disabled:opacity-30 disabled:cursor-not-allowed text-charcoal-mid text-lg"
+          className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-cream-deep transition-colors
+            disabled:opacity-30 disabled:cursor-not-allowed text-charcoal-mid text-[clamp(1.125rem,1.3vw,1.75rem)]"
           aria-label="Mes anterior"
         >
           ‹
         </button>
-        <span className="font-medium text-sm text-dark-charcoal">
+        <span className="font-medium text-[clamp(14px,1vw,20px)] text-dark-charcoal">
           {MONTHS_ES[month]} {year}
         </span>
         <button
           onClick={onNextMonth}
-          className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-cream-deep transition-colors text-charcoal-mid text-lg"
+          className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-cream-deep transition-colors text-charcoal-mid text-[clamp(1.125rem,1.3vw,1.75rem)]"
           aria-label="Mes siguiente"
         >
           ›
@@ -108,7 +108,7 @@ export function CalendarGrid({
         {DAYS_ES.map((d) => (
           <div
             key={d}
-            className="text-center text-xs font-semibold text-charcoal-light py-1"
+            className="text-center text-[clamp(11px,0.65vw,15px)] font-semibold text-charcoal-light py-1"
           >
             {d}
           </div>
@@ -130,7 +130,7 @@ export function CalendarGrid({
               key={day}
               disabled={disabled}
               onClick={() => onSelectDate(dateStr)}
-              className={`relative aspect-square rounded-lg text-sm flex items-center justify-center transition-all duration-150
+              className={`relative aspect-square rounded-lg text-[clamp(14px,1vw,20px)] flex items-center justify-center transition-all duration-150
                 ${
                   disabled
                     ? "text-cream-deep cursor-not-allowed"

@@ -97,7 +97,7 @@ export function AvailabilityCalendar({
       />
 
       <div>
-        <p className="text-sm font-medium text-dark-charcoal mb-3 capitalize">
+        <p className="text-[clamp(14px,1vw,20px)] font-medium text-dark-charcoal mb-3 capitalize">
           {selectedDate
             ? formatDisplayDate(selectedDate)
             : "Selecciona un día para ver los horarios ocupados"}
@@ -105,14 +105,14 @@ export function AvailabilityCalendar({
 
         {!selectedDate ? (
           <div className="h-full min-h-40 bg-cream-mid rounded-2xl border-2 border-dashed border-cream-deep flex items-center justify-center">
-            <p className="text-sm text-charcoal-light text-center px-6">
+            <p className="text-[clamp(14px,1vw,20px)] text-charcoal-light text-center px-6">
               ← Elige un día en el calendario. Los puntos indican horarios ya
               ocupados.
             </p>
           </div>
         ) : daySlots.length === 0 ? (
           <div className="h-full min-h-40 bg-cream-mid rounded-2xl border-2 border-dashed border-cream-deep flex items-center justify-center">
-            <p className="text-sm text-charcoal-light">Día completamente libre ✓</p>
+            <p className="text-[clamp(14px,1vw,20px)] text-charcoal-light">Día completamente libre ✓</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -124,14 +124,14 @@ export function AvailabilityCalendar({
                   className="px-4 py-3 rounded-xl bg-cream-mid border border-cream-deep"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="font-serif text-lg text-dark-charcoal">
+                    <span className="font-serif text-[clamp(1.125rem,1.3vw,1.6rem)] text-dark-charcoal">
                       {slot.timeSlot}
                     </span>
-                    <span className="shrink-0 text-xs font-medium text-muted-rose bg-muted-rose-light/30 px-2.5 py-0.5 rounded-full">
+                    <span className="shrink-0 text-[clamp(12px,0.65vw,15px)] font-medium text-muted-rose bg-muted-rose-light/30 px-2.5 py-0.5 rounded-full">
                       Ocupado
                     </span>
                   </div>
-                  <p className="text-sm text-charcoal-light mt-1">
+                  <p className="text-[clamp(14px,0.9vw,18px)] text-charcoal-light mt-1">
                     {slot.service.name}
                   </p>
                 </div>

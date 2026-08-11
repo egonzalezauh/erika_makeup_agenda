@@ -22,7 +22,7 @@ export function Footer() {
       id="contacto"
       className="bg-dark-charcoal text-cream-soft py-20 md:py-28 px-6 md:px-14"
     >
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[2200px] mx-auto">
 
         {/* ─── Marca central ────────────────────────────── */}
         <div className="text-center mb-12 md:mb-16">

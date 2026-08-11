@@ -45,7 +45,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
         <div key={step.n} className="flex items-center">
           <div className="flex flex-col items-center gap-1.5">
             <div
-              className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-medium transition-colors
+              className={`w-9 h-9 md:w-11 md:h-11 rounded-full flex items-center justify-center text-[clamp(14px,0.8vw,18px)] font-medium transition-colors
                 ${current === step.n
                   ? "bg-muted-rose text-white shadow-md"
                   : current > step.n
@@ -68,7 +68,7 @@ function StepIndicator({ current }: { current: 1 | 2 }) {
               )}
             </div>
             <span
-              className={`text-xs font-medium ${
+              className={`text-[clamp(12px,0.7vw,15px)] font-medium ${
                 current === step.n ? "text-muted-rose" : "text-charcoal-light"
               }`}
             >
@@ -104,10 +104,10 @@ function Step1Services({
   return (
     <div>
       <div className="text-center mb-8">
-        <h2 className="font-serif text-2xl text-dark-charcoal">
+        <h2 className="font-serif text-[clamp(1.5rem,2.2vw,2.75rem)] text-dark-charcoal">
           ¿Qué servicio deseas?
         </h2>
-        <p className="text-sm text-charcoal-light mt-1">
+        <p className="text-[clamp(14px,0.85vw,18px)] text-charcoal-light mt-1">
           Selecciona el servicio que mejor se adapte a tu ocasión
         </p>
       </div>
@@ -119,7 +119,7 @@ function Step1Services({
             <button
               key={service.id}
               onClick={() => onSelect(service.id)}
-              className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-200 cursor-pointer
+              className={`w-full text-left p-5 md:p-6 rounded-2xl border-2 transition-all duration-200 cursor-pointer
                 ${
                   isSelected
                     ? "border-muted-rose bg-muted-rose-light/20 shadow-md"
@@ -146,18 +146,18 @@ function Step1Services({
                       )}
                     </div>
                     <span
-                      className={`font-medium text-base ${
+                      className={`font-medium text-[clamp(16px,1vw,22px)] ${
                         isSelected ? "text-muted-rose-dark" : "text-dark-charcoal"
                       }`}
                     >
                       {service.name}
                     </span>
                   </div>
-                  <p className="text-sm text-charcoal-light leading-relaxed ml-6">
+                  <p className="text-[clamp(14px,0.85vw,18px)] text-charcoal-light leading-relaxed ml-6">
                     {service.description}
                   </p>
                   <div className="flex items-center gap-3 mt-3 ml-6">
-                    <span className="text-xs text-charcoal-light bg-cream-deep px-2.5 py-0.5 rounded-full">
+                    <span className="text-[clamp(12px,0.65vw,15px)] text-charcoal-light bg-cream-deep px-2.5 py-0.5 rounded-full">
                       ⏱ {service.duration} min
                     </span>
                   </div>
@@ -172,7 +172,7 @@ function Step1Services({
         <button
           disabled={!selected}
           onClick={onNext}
-          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-sm tracking-wide
+          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-[clamp(14px,0.8vw,18px)] tracking-wide
             hover:bg-muted-rose-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >
           Siguiente →
@@ -214,10 +214,10 @@ function Step2DateTime({
   return (
     <div>
       <div className="text-center mb-8">
-        <h2 className="font-serif text-2xl text-dark-charcoal">
+        <h2 className="font-serif text-[clamp(1.5rem,2.2vw,2.75rem)] text-dark-charcoal">
           ¿Cuándo te vemos?
         </h2>
-        <p className="text-sm text-charcoal-light mt-1">
+        <p className="text-[clamp(14px,0.85vw,18px)] text-charcoal-light mt-1">
           Selecciona una fecha y el horario de tu preferencia
         </p>
       </div>
@@ -236,7 +236,7 @@ function Step2DateTime({
 
         {/* ── Time slots ── */}
         <div>
-          <p className="text-sm font-medium text-dark-charcoal mb-3">
+          <p className="text-[clamp(14px,1vw,20px)] font-medium text-dark-charcoal mb-3">
             {selectedDate
               ? `Horarios — ${formatDisplayDate(selectedDate)}`
               : "Primero selecciona una fecha"}
@@ -244,7 +244,7 @@ function Step2DateTime({
 
           {!selectedDate ? (
             <div className="h-full min-h-40 bg-cream-mid rounded-2xl border-2 border-dashed border-cream-deep flex items-center justify-center">
-              <p className="text-sm text-charcoal-light">
+              <p className="text-[clamp(14px,0.9vw,18px)] text-charcoal-light">
                 ← Elige un día en el calendario
               </p>
             </div>
@@ -256,7 +256,7 @@ function Step2DateTime({
                   <button
                     key={slot}
                     onClick={() => onSelectTime(slot)}
-                    className={`py-2.5 rounded-xl text-sm font-medium transition-all duration-150 border
+                    className={`py-2.5 md:py-3 rounded-xl text-[clamp(14px,0.9vw,18px)] font-medium transition-all duration-150 border
                       ${
                         isSelected
                           ? "bg-muted-rose text-white border-muted-rose shadow-sm"
@@ -275,7 +275,7 @@ function Step2DateTime({
       <div className="mt-8 flex justify-between">
         <button
           onClick={onBack}
-          className="px-6 py-3 rounded-full border border-cream-deep text-charcoal-mid text-sm font-medium
+          className="px-6 py-3 rounded-full border border-cream-deep text-charcoal-mid text-[clamp(14px,0.8vw,18px)] font-medium
             hover:bg-cream-mid transition-colors"
         >
           ← Volver
@@ -283,7 +283,7 @@ function Step2DateTime({
         <button
           disabled={!selectedDate || !selectedTime}
           onClick={onNext}
-          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-sm tracking-wide
+          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-[clamp(14px,0.8vw,18px)] tracking-wide
             hover:bg-muted-rose-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
         >
           Siguiente →
@@ -333,16 +333,16 @@ function WhatsAppBridge({
         </div>
       </div>
 
-      <h2 className="font-serif text-3xl text-dark-charcoal mb-2">
+      <h2 className="font-serif text-[clamp(1.875rem,3vw,3.5rem)] text-dark-charcoal mb-2">
         ¡Ya casi! Un último paso
       </h2>
-      <p className="text-charcoal-light text-sm max-w-sm mx-auto leading-relaxed">
+      <p className="text-charcoal-light text-[clamp(14px,0.9vw,18px)] max-w-md mx-auto leading-relaxed">
         Continúa por WhatsApp para coordinar tu cita directamente
         conmigo.
       </p>
 
-      <div className="mt-6 max-w-sm mx-auto text-left">
-        <label className="block text-xs font-semibold text-charcoal-mid tracking-widest uppercase mb-1.5">
+      <div className="mt-6 max-w-md mx-auto text-left">
+        <label className="block text-[clamp(12px,0.65vw,15px)] font-semibold text-charcoal-mid tracking-widest uppercase mb-1.5">
           Tu nombre
         </label>
         <input
@@ -352,19 +352,19 @@ function WhatsAppBridge({
           placeholder="Ej. María López"
           className="w-full px-4 py-3 rounded-xl border border-cream-deep bg-cream-mid text-dark-charcoal
             placeholder:text-charcoal-light/60 focus:outline-none focus:border-muted-rose focus:bg-white
-            text-sm transition-colors"
+            text-[clamp(14px,0.85vw,18px)] transition-colors"
         />
       </div>
 
       {service && (
-        <div className="mt-8 inline-block text-left bg-cream-mid border border-cream-deep rounded-2xl p-6 w-full max-w-sm">
-          <p className="text-xs font-semibold tracking-widest uppercase text-charcoal-light mb-4">
+        <div className="mt-8 inline-block text-left bg-cream-mid border border-cream-deep rounded-2xl p-6 w-full max-w-md">
+          <p className="text-[clamp(12px,0.65vw,15px)] font-semibold tracking-widest uppercase text-charcoal-light mb-4">
             Detalle de tu solicitud
           </p>
-          <p className="font-serif text-xl text-dark-charcoal mb-4">
+          <p className="font-serif text-[clamp(1.25rem,1.6vw,1.9rem)] text-dark-charcoal mb-4">
             {service.name}
           </p>
-          <div className="space-y-2.5 text-sm">
+          <div className="space-y-2.5 text-[clamp(14px,0.85vw,18px)]">
             <div className="flex justify-between gap-8">
               <span className="text-charcoal-light">Fecha</span>
               <span className="text-dark-charcoal font-medium capitalize">
@@ -388,7 +388,7 @@ function WhatsAppBridge({
       <div className="mt-8 flex gap-3 justify-center flex-wrap">
         <button
           onClick={onBack}
-          className="px-6 py-3 rounded-full border border-cream-deep text-charcoal-mid text-sm font-medium
+          className="px-6 py-3 rounded-full border border-cream-deep text-charcoal-mid text-[clamp(14px,0.8vw,18px)] font-medium
             hover:bg-cream-mid transition-colors"
         >
           ← Volver
@@ -397,7 +397,7 @@ function WhatsAppBridge({
           href={waLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-sm
+          className="px-8 py-3 rounded-full bg-muted-rose text-white font-medium text-[clamp(14px,0.8vw,18px)]
             hover:bg-muted-rose-dark transition-colors shadow-sm"
         >
           Continuar en WhatsApp →
@@ -407,7 +407,7 @@ function WhatsAppBridge({
       <div className="mt-6">
         <Link
           href="/"
-          className="text-xs text-charcoal-light hover:text-muted-rose transition-colors tracking-widest uppercase"
+          className="text-[clamp(12px,0.7vw,15px)] text-charcoal-light hover:text-muted-rose transition-colors tracking-widest uppercase"
         >
           ← Volver al inicio
         </Link>
@@ -471,7 +471,7 @@ export function BookingWizard({ services }: { services: Service[] }) {
 
   if (step === "bridge") {
     return (
-      <div className="w-full max-w-3xl mx-auto">
+      <div className="w-full max-w-5xl mx-auto">
         <WhatsAppBridge
           service={selectedService}
           date={selectedDate!}
@@ -483,7 +483,7 @@ export function BookingWizard({ services }: { services: Service[] }) {
   }
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <StepIndicator current={step} />
 
       {step === 1 && (
