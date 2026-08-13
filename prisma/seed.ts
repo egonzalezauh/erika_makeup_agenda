@@ -51,7 +51,7 @@ async function main() {
         duration: 240,
         price: 50.0,
         description:
-          "Aprende a maquillarte con tus propias manos: preparación de piel, corrección, contorno, ojos y aplicación de pestañas, con técnicas profesionales adaptadas a tu rostro. Sesión práctica, con productos de alta gama incluidos.",
+          "Aprende a maquillarte con tus propias manos, te enseñamos cómo preparar tu piel antes del maquillaje, qué productos utilizar para skincare, aplicación de pestañas, contorno, iluminaciones, con técnicas profesionales adaptadas a tu rostro.",
       },
     }),
   ]);
