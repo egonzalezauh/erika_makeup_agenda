@@ -20,7 +20,7 @@ npx prisma studio                       # GUI to browse the database
 
 - **Next.js 16.2.9** — App Router, `src/` directory, React 19
 - **Tailwind CSS v4** — CSS-first; all theme tokens live in `src/app/globals.css` under `@theme {}`. There is **no** `tailwind.config.ts`.
-- **Prisma v5.22.0 + SQLite** — local dev uses `prisma/dev.db`. Production target is Supabase PostgreSQL (requires schema change from `sqlite` → `postgresql` and adding `directUrl`).
+- **Prisma v5.22.0 + PostgreSQL (Supabase)** — `schema.prisma` ya apunta a `postgresql` con `directUrl`; no hay SQLite local. Tanto dev como prod usan `DATABASE_URL` / `DIRECT_URL`.
 - **Fonts** — Cormorant Garamond (serif, `font-serif`) + DM Sans (sans-serif, `font-sans`), loaded via `next/font/google` in `layout.tsx`, exposed as CSS variables `--font-cormorant` / `--font-dm-sans`.
 
 ## Architecture
@@ -40,6 +40,51 @@ Server Actions in `src/actions/appointments.ts` are the only data-access layer. 
 | `/booking` | 2-step booking bridge (service → date/time), ends with a `wa.me` link pre-filled with the request — does not write to the DB |
 | `/calendario` | Public availability calendar — shows busy/free slots only (no client PII), no login required |
 | `/api/telegram/webhook` | POST-only Route Handler for the Telegram bot (see below) — not a page |
+
+### Panel de administración (Fase 3)
+
+La dueña gestiona sus citas desde `/admin`, un panel mobile-first pensado para
+usarse instalado como app en el celular. Reemplaza al bot de Telegram como
+interfaz principal.
+
+**Separación de zonas.** Un solo deploy sirve dos zonas:
+
+- **Pública, solo lectura** — `/`, `/booking`, `/calendario`. No escriben en la
+  BD (`/booking` termina en un enlace `wa.me`) y `/calendario` usa
+  `getPublicAppointmentAvailability()`, que no trae nombre, email, teléfono ni
+  notas del servidor. Este invariante no debe romperse.
+- **Privada, lectura + escritura** — `/admin/*`, protegida por `src/proxy.ts`.
+
+**Autenticación.** Una sola usuaria, así que no hay tabla de usuarios: una
+contraseña en `ADMIN_PASSWORD` y una cookie httpOnly firmada con HMAC-SHA256
+(`ADMIN_SESSION_SECRET`), 60 días de vigencia. `src/lib/auth.ts` usa Web Crypto,
+no `node:crypto`, porque `proxy.ts` corre en el runtime Edge.
+
+**`src/proxy.ts`** (en Next.js 16 el archivo `middleware.ts` se renombró a
+`proxy.ts`) bloquea toda ruta `/admin/*` sin cookie válida y redirige a
+`/admin/login?redirect=…`. Solo se aceptan destinos de redirección internos.
+
+`AppointmentForm` sirve para crear y para editar: la diferencia es si recibe
+`appointmentId`. `updateAppointment` excluye la propia cita al buscar
+solapamientos — si no, guardar sin mover el horario chocaría consigo misma.
+
+**`src/actions/admin.ts`** son envoltorios autenticados de `appointments.ts`.
+La capa de datos sigue sin validar sesión porque el webhook de Telegram la usa
+con su propia autenticación; el panel entra por los envoltorios, que llaman a
+`requireAdmin()` antes de escribir. Las Server Actions se invocan por POST desde
+el cliente, así que esta verificación es necesaria además del `proxy.ts`.
+
+**PWA.** `src/app/manifest.ts` hace la app instalable (`start_url: "/admin"`,
+`display: "standalone"`), con íconos en `public/icons/`. Es también la base
+sobre la que se empaqueta el `.apk` de Android.
+
+| Ruta | Descripción |
+|---|---|
+| `/admin` | Citas de hoy, con botones de estado grandes |
+| `/admin/nueva` | Formulario para registrar una cita (nace `CONFIRMADA`) |
+| `/admin/agenda` | Próximas citas agrupadas por día |
+| `/admin/cita/[id]` | Editar y reprogramar (no toca el estado) |
+| `/admin/login` | Contraseña única |
 
 ### Telegram bot (Fase 2)
 The business owner manages appointments by chatting with a private Telegram bot (not client-facing). `src/app/api/telegram/webhook/route.ts` receives every message, checks the `X-Telegram-Bot-Api-Secret-Token` header against `TELEGRAM_WEBHOOK_SECRET`, ignores any chat ID that isn't `TELEGRAM_ADMIN_CHAT_ID`, parses the text via the pure parser in `src/lib/telegram/commands.ts`, dispatches to `appointments.ts`, and replies via `src/lib/telegram/client.ts` (`sendMessage`, plain text, no `parse_mode`). Fixed keyword grammar: `ayuda`, `servicios`, `citas hoy|mañana|YYYY-MM-DD`, `confirmar|cancelar|completar|reabrir <nombre>` (fuzzy match via `searchAppointmentsByClientName`, replies with a disambiguation list if 2+ matches instead of guessing), and a multi-line `agendar` block (`servicio:`/`fecha:`/`hora:`/`nombre:`/`telefono:`/optional `email:`/`notas:`) — appointments created this way default to `CONFIRMADA` status (not `PENDIENTE`), since the owner is registering something already agreed with the client. "Hoy"/"mañana" are resolved in `src/lib/dates.ts` (`guayaquilDateString()`) pinned to `America/Guayaquil`, independent of the server's own timezone (Vercel runs UTC).

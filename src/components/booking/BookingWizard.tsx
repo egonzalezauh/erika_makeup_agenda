@@ -6,7 +6,7 @@ import {
   CalendarGrid,
   formatDisplayDate,
 } from "@/components/shared/CalendarGrid";
-import { timeToMinutes, minutesToTime } from "@/lib/time";
+import { timeToMinutes, minutesToTime, BUSINESS_TIME_SLOTS } from "@/lib/time";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ function toDateKey(date: Date | string): string {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 // Cada 30 min, de 05:00 a 18:00 inclusive.
-const TIME_SLOTS = Array.from({ length: 27 }, (_, i) => minutesToTime(5 * 60 + i * 30));
+const TIME_SLOTS = BUSINESS_TIME_SLOTS;
 
 const WHATSAPP_NUMBER = (
   process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? ""

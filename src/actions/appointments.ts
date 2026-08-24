@@ -17,6 +17,16 @@ export type CreateAppointmentInput = {
   status?:     "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
 };
 
+export type UpdateAppointmentInput = {
+  clientName:  string;
+  clientEmail: string;
+  clientPhone: string;
+  date:        string; // ISO date "YYYY-MM-DD"
+  timeSlot:    string; // "HH:mm"
+  serviceId:   string;
+  notes?:      string;
+};
+
 // ─── Solapamiento de horarios ──────────────────────────────────────
 // Una cita ocupa [timeSlot, timeSlot + service.duration), no solo el minuto
 // exacto en que empieza. Antes de crear o reactivar una cita hay que
@@ -189,6 +199,71 @@ export async function updateAppointmentStatus(
   } catch (err) {
     console.error("[updateAppointmentStatus]", err);
     return { success: false, error: "No se pudo actualizar el estado." };
+  }
+}
+
+export async function getAppointmentById(id: string) {
+  return prisma.appointment.findUnique({
+    where: { id },
+    include: { service: true },
+  });
+}
+
+// Edita los datos de una cita, incluido reprogramarla a otra fecha u hora
+// o cambiarle el servicio. El estado no se toca aquí — para eso está
+// `updateAppointmentStatus`.
+//
+// La verificación de solapamiento se excluye a sí misma: si no, guardar una
+// cita sin moverle el horario chocaría contra su propio registro.
+export async function updateAppointment(
+  id:   string,
+  data: UpdateAppointmentInput
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const existing = await prisma.appointment.findUnique({ where: { id } });
+    if (!existing) {
+      return { success: false, error: "Cita no encontrada." };
+    }
+
+    const service = await prisma.service.findUnique({ where: { id: data.serviceId } });
+    if (!service) {
+      return { success: false, error: "Servicio no encontrado." };
+    }
+
+    // Una cita cancelada no ocupa horario, así que tampoco puede chocar.
+    if (existing.status !== "CANCELADA") {
+      const conflict = await findConflictingAppointment(
+        data.date,
+        data.timeSlot,
+        service.duration,
+        id
+      );
+      if (conflict) {
+        return {
+          success: false,
+          error: `Ese horario choca con la cita de ${describeConflict(conflict)}. Elige otro horario.`,
+        };
+      }
+    }
+
+    await prisma.appointment.update({
+      where: { id },
+      data: {
+        clientName:  data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone,
+        date:        new Date(data.date),
+        timeSlot:    data.timeSlot,
+        serviceId:   data.serviceId,
+        notes:       data.notes ?? null,
+      },
+    });
+
+    revalidatePath("/calendario");
+    return { success: true };
+  } catch (err) {
+    console.error("[updateAppointment]", err);
+    return { success: false, error: "No se pudo guardar los cambios." };
   }
 }
 
