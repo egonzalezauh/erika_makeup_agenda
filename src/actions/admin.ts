@@ -19,7 +19,7 @@ import {
 
 export async function adminUpdateAppointmentStatus(
   id: string,
-  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA"
+  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA"
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
   const result = await updateAppointmentStatus(id, status);

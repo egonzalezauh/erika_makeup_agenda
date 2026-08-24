@@ -27,11 +27,17 @@ export type UpdateAppointmentInput = {
   notes?:      string;
 };
 
+// Estados que no ocupan horario ni aparecen en el panel: CANCELADA sigue
+// siendo visible (colapsada) para poder reabrirla; ELIMINADA es la misma
+// idea pero invisible del todo — "borrar" una cita solo le pone este estado,
+// nunca se hace un delete real en la base.
+const INACTIVE_STATUSES = ["CANCELADA", "ELIMINADA"];
+
 // ─── Solapamiento de horarios ──────────────────────────────────────
 // Una cita ocupa [timeSlot, timeSlot + service.duration), no solo el minuto
 // exacto en que empieza. Antes de crear o reactivar una cita hay que
 // verificar que ese rango no choque con ninguna otra cita activa (cualquier
-// estado salvo CANCELADA) ese mismo día.
+// estado salvo CANCELADA/ELIMINADA) ese mismo día.
 
 async function findConflictingAppointment(
   date: string,
@@ -46,7 +52,7 @@ async function findConflictingAppointment(
   const sameDay = await prisma.appointment.findMany({
     where: {
       date: { gte: start, lt: end },
-      status: { not: "CANCELADA" },
+      status: { notIn: INACTIVE_STATUSES },
       ...(excludeAppointmentId ? { id: { not: excludeAppointmentId } } : {}),
     },
     include: { service: true },
@@ -109,8 +115,12 @@ export async function createAppointment(
   }
 }
 
+// No trae las ELIMINADA — "borrar" una cita desde el panel la saca de acá
+// (y por lo tanto de Hoy y Agenda, que se alimentan de esta función) sin
+// tocar la base de datos.
 export async function getAppointments() {
   return prisma.appointment.findMany({
+    where: { status: { not: "ELIMINADA" } },
     include: { service: true },
     orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
   });
@@ -120,7 +130,7 @@ export async function getAppointments() {
 // leaves this query. Used by the public /calendario page.
 export async function getPublicAppointmentAvailability() {
   return prisma.appointment.findMany({
-    where: { status: { not: "CANCELADA" } },
+    where: { status: { notIn: INACTIVE_STATUSES } },
     select: {
       date: true,
       timeSlot: true,
@@ -137,7 +147,7 @@ export async function getAppointmentsByDate(date: string) {
   end.setDate(end.getDate() + 1);
 
   return prisma.appointment.findMany({
-    where: { date: { gte: start, lt: end } },
+    where: { date: { gte: start, lt: end }, status: { not: "ELIMINADA" } },
     include: { service: true },
     orderBy: { timeSlot: "asc" },
   });
@@ -151,6 +161,7 @@ export async function getAppointmentsByDate(date: string) {
 export async function searchAppointmentsByClientName(query: string) {
   const needle = query.trim().toLowerCase();
   const all = await prisma.appointment.findMany({
+    where: { status: { not: "ELIMINADA" } },
     include: { service: true },
     orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
   });
@@ -159,12 +170,14 @@ export async function searchAppointmentsByClientName(query: string) {
 
 export async function updateAppointmentStatus(
   id:     string,
-  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA"
+  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA"
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Reabrir una cita cancelada la vuelve a poner activa — hay que revisar
-    // que el horario no se haya ocupado con otra cita mientras tanto.
-    if (status !== "CANCELADA") {
+    // que el horario no se haya ocupado con otra cita mientras tanto. Pasar
+    // a CANCELADA o ELIMINADA nunca necesita este chequeo: ninguna de las
+    // dos ocupa horario.
+    if (!INACTIVE_STATUSES.includes(status)) {
       const current = await prisma.appointment.findUnique({
         where: { id },
         include: { service: true },
@@ -172,7 +185,7 @@ export async function updateAppointmentStatus(
       if (!current) {
         return { success: false, error: "Cita no encontrada." };
       }
-      if (current.status === "CANCELADA") {
+      if (INACTIVE_STATUSES.includes(current.status)) {
         const dateStr = current.date.toISOString().split("T")[0];
         const conflict = await findConflictingAppointment(
           dateStr,
@@ -230,8 +243,8 @@ export async function updateAppointment(
       return { success: false, error: "Servicio no encontrado." };
     }
 
-    // Una cita cancelada no ocupa horario, así que tampoco puede chocar.
-    if (existing.status !== "CANCELADA") {
+    // Una cita cancelada o eliminada no ocupa horario, así que tampoco puede chocar.
+    if (!INACTIVE_STATUSES.includes(existing.status)) {
       const conflict = await findConflictingAppointment(
         data.date,
         data.timeSlot,

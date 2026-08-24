@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { MessageCircle, Pencil, Phone } from "lucide-react";
+import { MessageCircle, Pencil, Phone, Trash2 } from "lucide-react";
 import { adminUpdateAppointmentStatus } from "@/actions/admin";
 import { cn, formatTime, whatsappHref } from "@/lib/utils";
 import { minutesToTime, timeToMinutes } from "@/lib/time";
@@ -19,7 +19,7 @@ export type AppointmentCardData = {
   duration:    number;
 };
 
-type Status = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA";
+type Status = "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA";
 type Action = { label: string; status: Status; tone: "primary" | "quiet" };
 
 // Qué puede hacer la dueña según en qué punto está la cita. Mostramos solo
@@ -65,6 +65,16 @@ export default function AppointmentCard({
     });
   }
 
+  // "Eliminar" no borra el registro — le pone un estado que la saca de Hoy
+  // y Agenda para siempre, sin tocar la base. Al no haber forma de reabrirla
+  // desde acá, se confirma antes de aplicarlo.
+  function remove() {
+    if (!window.confirm(`¿Eliminar la cita de ${appointment.clientName}? No vas a poder verla más en la app.`)) {
+      return;
+    }
+    changeStatus("ELIMINADA");
+  }
+
   return (
     <article
       className={cn(
@@ -94,6 +104,15 @@ export default function AppointmentCard({
           >
             <Pencil size={16} strokeWidth={1.7} aria-hidden />
           </Link>
+          <button
+            type="button"
+            aria-label={`Eliminar la cita de ${appointment.clientName}`}
+            disabled={isPending}
+            onClick={remove}
+            className="flex h-11 w-11 items-center justify-center rounded-full border border-cream-deep text-charcoal-light active:bg-cream-mid disabled:opacity-50"
+          >
+            <Trash2 size={16} strokeWidth={1.7} aria-hidden />
+          </button>
         </div>
       </header>
 

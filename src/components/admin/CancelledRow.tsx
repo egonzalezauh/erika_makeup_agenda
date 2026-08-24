@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Trash2 } from "lucide-react";
 import { adminUpdateAppointmentStatus } from "@/actions/admin";
 import { cn, formatTime } from "@/lib/utils";
 import type { AppointmentCardData } from "@/components/admin/AppointmentCard";
@@ -25,6 +25,19 @@ export default function CancelledRow({
     });
   }
 
+  // Igual que en AppointmentCard: no borra el registro, solo la saca de la
+  // app para siempre — se confirma porque no hay forma de reabrirla después.
+  function remove() {
+    if (!window.confirm(`¿Eliminar la cita de ${appointment.clientName}? No vas a poder verla más en la app.`)) {
+      return;
+    }
+    setError(null);
+    startTransition(async () => {
+      const result = await adminUpdateAppointmentStatus(appointment.id, "ELIMINADA");
+      if (!result.success) setError(result.error ?? "No se pudo eliminar.");
+    });
+  }
+
   return (
     <div className={cn("transition-opacity", isPending && "opacity-50")}>
       <div className="flex items-center gap-3 rounded-2xl border border-cream-deep bg-cream-soft px-4 py-3">
@@ -45,6 +58,15 @@ export default function CancelledRow({
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cream-deep text-charcoal-light active:bg-cream-mid disabled:opacity-50"
         >
           <RotateCcw size={14} strokeWidth={1.8} aria-hidden />
+        </button>
+        <button
+          type="button"
+          aria-label={`Eliminar la cita de ${appointment.clientName}`}
+          disabled={isPending}
+          onClick={remove}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-cream-deep text-charcoal-light active:bg-cream-mid disabled:opacity-50"
+        >
+          <Trash2 size={14} strokeWidth={1.8} aria-hidden />
         </button>
       </div>
 
