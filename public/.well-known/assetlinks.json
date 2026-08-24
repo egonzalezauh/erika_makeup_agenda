@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.erikaauhing.agenda",
+      "sha256_cert_fingerprints": [
+        "28:87:70:C4:9E:EF:99:27:F9:A3:BF:26:5B:22:B8:CC:4A:8A:A0:F7:81:6E:25:C2:C4:AC:E0:AB:A8:73:74:CD"
+      ]
+    }
+  }
+]
