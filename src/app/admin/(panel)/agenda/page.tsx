@@ -4,6 +4,7 @@ import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,
 } from "@/components/admin/AppointmentCard";
+import CancelledRow from "@/components/admin/CancelledRow";
 
 export const metadata: Metadata = { title: "Agenda" };
 export const dynamic = "force-dynamic";
@@ -79,7 +80,11 @@ export default async function AgendaPage() {
                     serviceName: appointment.service.name,
                     duration:    appointment.service.duration,
                   };
-                  return <AppointmentCard key={data.id} appointment={data} />;
+                  return data.status === "CANCELADA" ? (
+                    <CancelledRow key={data.id} appointment={data} />
+                  ) : (
+                    <AppointmentCard key={data.id} appointment={data} />
+                  );
                 })}
               </div>
             </section>

@@ -1,8 +1,10 @@
-import { getAppointmentsByDate } from "@/actions/appointments";
+import { getAppointments, getAppointmentsByDate } from "@/actions/appointments";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,
 } from "@/components/admin/AppointmentCard";
+import CancelledRow from "@/components/admin/CancelledRow";
+import UpcomingPreview from "@/components/admin/UpcomingPreview";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 // Siempre datos frescos: la agenda del día cambia mientras se usa.
@@ -21,7 +23,13 @@ function capitalize(text: string) {
 
 export default async function AdminTodayPage() {
   const today = guayaquilDateString();
-  const appointments = await getAppointmentsByDate(today);
+  const weekEnd = guayaquilDateString(7);
+  const monthEnd = guayaquilDateString(30);
+
+  const [appointments, all] = await Promise.all([
+    getAppointmentsByDate(today),
+    getAppointments(),
+  ]);
 
   // Las canceladas van al final: siguen visibles por si hay que reabrirlas,
   // pero no estorban la lectura del día.
@@ -32,6 +40,27 @@ export default async function AdminTodayPage() {
   });
 
   const activas = appointments.filter((a) => a.status !== "CANCELADA").length;
+
+  // Adelanto de lo que viene: solo citas activas, agrupadas en "esta
+  // semana" (lista corta) y "resto del mes" (solo un conteo). Prisma guarda
+  // la fecha como medianoche UTC, así que la clave del día sale del ISO
+  // directo — mismo patrón que ya usa /admin/agenda.
+  const active = all.filter((a) => a.status !== "CANCELADA");
+  const thisWeek = active
+    .filter((a) => {
+      const key = a.date.toISOString().split("T")[0];
+      return key > today && key <= weekEnd;
+    })
+    .map((a) => ({
+      id: a.id,
+      date: a.date.toISOString().split("T")[0],
+      timeSlot: a.timeSlot,
+      clientName: a.clientName,
+    }));
+  const laterThisMonthCount = active.filter((a) => {
+    const key = a.date.toISOString().split("T")[0];
+    return key > weekEnd && key <= monthEnd;
+  }).length;
 
   return (
     <>
@@ -76,10 +105,16 @@ export default async function AdminTodayPage() {
               serviceName: appointment.service.name,
               duration:    appointment.service.duration,
             };
-            return <AppointmentCard key={data.id} appointment={data} />;
+            return data.status === "CANCELADA" ? (
+              <CancelledRow key={data.id} appointment={data} />
+            ) : (
+              <AppointmentCard key={data.id} appointment={data} />
+            );
           })
         )}
       </section>
+
+      <UpcomingPreview thisWeek={thisWeek} laterThisMonthCount={laterThisMonthCount} />
     </>
   );
 }
