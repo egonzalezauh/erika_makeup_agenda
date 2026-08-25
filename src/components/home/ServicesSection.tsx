@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getServices } from "@/actions/appointments";
+import { getPublicServices } from "@/actions/appointments";
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -48,7 +48,7 @@ const DISPLAY_ORDER = [
 ];
 
 export async function ServicesSection() {
-  const allServices = await getServices();
+  const allServices = await getPublicServices();
   // El curso tiene su propia sección en el home (ver CoursesSection), no se lista aquí.
   const services = allServices
     .filter((s) => s.name !== "Curso de Automaquillaje")

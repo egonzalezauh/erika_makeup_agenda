@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getServices } from "@/actions/appointments";
+import { getPublicServices } from "@/actions/appointments";
 
 export async function CoursesSection() {
-  const services = await getServices();
+  const services = await getPublicServices();
   const curso = services.find((s) => s.name === "Curso de Automaquillaje");
 
   if (!curso) return null;

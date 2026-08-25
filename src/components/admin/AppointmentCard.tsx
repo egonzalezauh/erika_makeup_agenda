@@ -143,13 +143,15 @@ export default function AppointmentCard({
             WhatsApp
           </a>
         )}
-        <a
-          href={`tel:${appointment.clientPhone.replace(/\s/g, "")}`}
-          className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-cream-deep font-sans text-sm text-charcoal-mid active:bg-cream-mid"
-        >
-          <Phone size={17} strokeWidth={1.7} aria-hidden />
-          Llamar
-        </a>
+        {appointment.clientPhone.trim() && (
+          <a
+            href={`tel:${appointment.clientPhone.replace(/\s/g, "")}`}
+            className="flex h-12 flex-1 items-center justify-center gap-2 rounded-2xl border border-cream-deep font-sans text-sm text-charcoal-mid active:bg-cream-mid"
+          >
+            <Phone size={17} strokeWidth={1.7} aria-hidden />
+            Llamar
+          </a>
+        )}
       </div>
 
       <div className="mt-2 flex gap-2">

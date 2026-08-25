@@ -8,7 +8,7 @@ async function main() {
   await prisma.appointment.deleteMany();
   await prisma.service.deleteMany();
 
-  const [social, quince, novia, artistico, curso] = await Promise.all([
+  const [social, socialSolo, quince, novia, artistico, curso] = await Promise.all([
     prisma.service.create({
       data: {
         name: "Maquillaje y Peinado Social",
@@ -16,6 +16,17 @@ async function main() {
         price: 60.0,
         description:
           "Incluye preparación de piel, pestañas de banda, peinado semi recogido con ondas y maquillaje de larga duración.",
+      },
+    }),
+    // Solo-admin — filtrado por nombre en getPublicServices(), no se ofrece
+    // en la web pública ni en /booking.
+    prisma.service.create({
+      data: {
+        name: "Maquillaje Social",
+        duration: 60,
+        price: 45.0,
+        description:
+          "Preparación de piel y maquillaje de larga duración, sin peinado. Ideal cuando la clienta ya trae el cabello listo.",
       },
     }),
     prisma.service.create({
@@ -57,7 +68,7 @@ async function main() {
   ]);
 
   console.log("✅ Servicios creados:");
-  for (const s of [social, quince, novia, artistico, curso]) {
+  for (const s of [social, socialSolo, quince, novia, artistico, curso]) {
     console.log(`   • ${s.name} — $${s.price} / ${s.duration} min`);
   }
 }

@@ -146,12 +146,11 @@ export default function AppointmentForm({
       </label>
 
       <label className="flex flex-col gap-2">
-        <span className={LABEL}>Teléfono</span>
+        <span className={LABEL}>Teléfono (Opcional)</span>
         <input
           type="tel"
           name="clientPhone"
           inputMode="tel"
-          required
           placeholder="0991234567"
           defaultValue={initial.clientPhone}
           className={FIELD}

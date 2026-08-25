@@ -282,8 +282,23 @@ export async function updateAppointment(
 
 // ─── Servicios ────────────────────────────────────────────────────
 
+// Trae todos los servicios, incluidos los que solo debe ver la dueña.
+// Usado por /admin/nueva, /admin/cita/[id] y el bot de Telegram — ninguno
+// de los tres es de cara al público.
 export async function getServices() {
   return prisma.service.findMany({
     orderBy: { name: "asc" },
   });
+}
+
+// Servicios que no deben ofrecerse en la web pública: existen en la base y
+// se pueden agendar desde el panel, pero no tienen sentido para un cliente
+// que reserva por su cuenta (p. ej. porque son una variante interna).
+const ADMIN_ONLY_SERVICE_NAMES = ["Maquillaje Social"];
+
+// Misma lista que getServices(), sin los servicios solo-admin. Usado por
+// las páginas públicas (home, /booking).
+export async function getPublicServices() {
+  const services = await getServices();
+  return services.filter((s) => !ADMIN_ONLY_SERVICE_NAMES.includes(s.name));
 }
