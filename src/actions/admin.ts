@@ -19,10 +19,11 @@ import {
 
 export async function adminUpdateAppointmentStatus(
   id: string,
-  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA"
+  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA",
+  amountEarned?: number
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const result = await updateAppointmentStatus(id, status);
+  const result = await updateAppointmentStatus(id, status, amountEarned);
   if (result.success) revalidatePath("/admin", "layout");
   return result;
 }

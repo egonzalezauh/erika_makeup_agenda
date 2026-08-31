@@ -41,6 +41,7 @@ model Appointment {
   timeSlot    String   // ej. "10:00", "14:30"
   notes       String?
   status      String   @default("PENDIENTE")
+  amountEarned Float?  // lo que ganó en esta cita, capturado al completarla
 
   // Relación con el servicio contratado
   serviceId String

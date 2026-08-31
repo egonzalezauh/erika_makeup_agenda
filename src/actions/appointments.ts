@@ -126,6 +126,17 @@ export async function getAppointments() {
   });
 }
 
+// Citas completadas, con su monto — alimenta la pestaña Ingresos. Solo
+// lectura, sin envoltorio en admin.ts: la ruta ya está protegida por
+// proxy.ts, igual que getAppointments() en agenda/page.tsx.
+export async function getCompletedAppointments() {
+  return prisma.appointment.findMany({
+    where: { status: "COMPLETADA" },
+    include: { service: true },
+    orderBy: [{ date: "asc" }],
+  });
+}
+
 // Public read-only availability — no client PII (name/email/phone/notes)
 // leaves this query. Used by the public /calendario page.
 export async function getPublicAppointmentAvailability() {
@@ -169,8 +180,9 @@ export async function searchAppointmentsByClientName(query: string) {
 }
 
 export async function updateAppointmentStatus(
-  id:     string,
-  status: "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA"
+  id:           string,
+  status:       "PENDIENTE" | "CONFIRMADA" | "CANCELADA" | "COMPLETADA" | "ELIMINADA",
+  amountEarned?: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Reabrir una cita cancelada la vuelve a poner activa — hay que revisar
@@ -204,7 +216,12 @@ export async function updateAppointmentStatus(
 
     await prisma.appointment.update({
       where: { id },
-      data:  { status },
+      data:  {
+        status,
+        ...(status === "COMPLETADA" && amountEarned !== undefined
+          ? { amountEarned }
+          : {}),
+      },
     });
 
     revalidatePath("/calendario");

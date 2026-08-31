@@ -5,6 +5,9 @@ import AppointmentCard, {
 } from "@/components/admin/AppointmentCard";
 import CancelledRow from "@/components/admin/CancelledRow";
 import UpcomingPreview from "@/components/admin/UpcomingPreview";
+import OverdueSection, {
+  type OverdueAppointment,
+} from "@/components/admin/OverdueSection";
 import LogoutButton from "@/components/admin/LogoutButton";
 
 // Siempre datos frescos: la agenda del día cambia mientras se usa.
@@ -62,6 +65,27 @@ export default async function AdminTodayPage() {
     return key > weekEnd && key <= monthEnd;
   }).length;
 
+  // Citas de días anteriores que nunca se resolvieron: no aparecen en
+  // Agenda (filtra date >= hoy) ni en Hoy (solo el día actual), así que
+  // sin esto se pierden de vista aunque sigan activas en la base.
+  const overdue: OverdueAppointment[] = all
+    .filter((a) => {
+      const key = a.date.toISOString().split("T")[0];
+      return key < today && (a.status === "PENDIENTE" || a.status === "CONFIRMADA");
+    })
+    .map((a) => ({
+      id:           a.id,
+      clientName:   a.clientName,
+      clientPhone:  a.clientPhone,
+      timeSlot:     a.timeSlot,
+      status:       a.status,
+      notes:        a.notes,
+      serviceName:  a.service.name,
+      duration:     a.service.duration,
+      amountEarned: a.amountEarned,
+      date:         a.date.toISOString().split("T")[0],
+    }));
+
   return (
     <>
       <header className="flex items-start justify-between gap-4">
@@ -96,14 +120,15 @@ export default async function AdminTodayPage() {
         ) : (
           ordered.map((appointment) => {
             const data: AppointmentCardData = {
-              id:          appointment.id,
-              clientName:  appointment.clientName,
-              clientPhone: appointment.clientPhone,
-              timeSlot:    appointment.timeSlot,
-              status:      appointment.status,
-              notes:       appointment.notes,
-              serviceName: appointment.service.name,
-              duration:    appointment.service.duration,
+              id:           appointment.id,
+              clientName:   appointment.clientName,
+              clientPhone:  appointment.clientPhone,
+              timeSlot:     appointment.timeSlot,
+              status:       appointment.status,
+              notes:        appointment.notes,
+              serviceName:  appointment.service.name,
+              duration:     appointment.service.duration,
+              amountEarned: appointment.amountEarned,
             };
             return data.status === "CANCELADA" ? (
               <CancelledRow key={data.id} appointment={data} />
@@ -113,6 +138,8 @@ export default async function AdminTodayPage() {
           })
         )}
       </section>
+
+      <OverdueSection appointments={overdue} />
 
       <UpcomingPreview thisWeek={thisWeek} laterThisMonthCount={laterThisMonthCount} />
     </>

@@ -11,6 +11,15 @@ export function formatDate(iso: string): string {
   }).format(new Date(iso));
 }
 
+const currencyFormatter = new Intl.NumberFormat("es-EC", {
+  style: "currency",
+  currency: "USD",
+});
+
+export function formatCurrency(amount: number): string {
+  return currencyFormatter.format(amount);
+}
+
 export function formatTime(time: string): string {
   const [h, m] = time.split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
