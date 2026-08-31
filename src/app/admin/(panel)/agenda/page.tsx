@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getAppointments } from "@/actions/appointments";
+import { getUpcomingAppointments } from "@/actions/appointments";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,
@@ -23,15 +23,11 @@ function capitalize(text: string) {
 export default async function AgendaPage() {
   const today = guayaquilDateString();
   const tomorrow = guayaquilDateString(1);
-  const all = await getAppointments();
+  const upcoming = await getUpcomingAppointments(today);
 
   // Prisma guarda la fecha como medianoche UTC, así que la clave del día
   // se saca del ISO directamente — parsearla con `new Date()` en un equipo
   // UTC-5 la correría un día hacia atrás.
-  const upcoming = all.filter(
-    (a) => a.date.toISOString().split("T")[0] >= today
-  );
-
   const byDay = new Map<string, typeof upcoming>();
   for (const appointment of upcoming) {
     const key = appointment.date.toISOString().split("T")[0];

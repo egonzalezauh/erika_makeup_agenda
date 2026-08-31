@@ -1,4 +1,9 @@
-import { getAppointments, getAppointmentsByDate } from "@/actions/appointments";
+import {
+  getAppointmentsByDate,
+  getOverdueAppointments,
+  getUpcomingAppointmentsInRange,
+  countAppointmentsInRange,
+} from "@/actions/appointments";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,
@@ -29,10 +34,13 @@ export default async function AdminTodayPage() {
   const weekEnd = guayaquilDateString(7);
   const monthEnd = guayaquilDateString(30);
 
-  const [appointments, all] = await Promise.all([
-    getAppointmentsByDate(today),
-    getAppointments(),
-  ]);
+  const [appointments, overdueRows, thisWeekRows, laterThisMonthCount] =
+    await Promise.all([
+      getAppointmentsByDate(today),
+      getOverdueAppointments(today),
+      getUpcomingAppointmentsInRange(today, weekEnd),
+      countAppointmentsInRange(weekEnd, monthEnd),
+    ]);
 
   // Las canceladas van al final: siguen visibles por si hay que reabrirlas,
   // pero no estorban la lectura del día.
@@ -44,47 +52,32 @@ export default async function AdminTodayPage() {
 
   const activas = appointments.filter((a) => a.status !== "CANCELADA").length;
 
-  // Adelanto de lo que viene: solo citas activas, agrupadas en "esta
-  // semana" (lista corta) y "resto del mes" (solo un conteo). Prisma guarda
-  // la fecha como medianoche UTC, así que la clave del día sale del ISO
-  // directo — mismo patrón que ya usa /admin/agenda.
-  const active = all.filter((a) => a.status !== "CANCELADA");
-  const thisWeek = active
-    .filter((a) => {
-      const key = a.date.toISOString().split("T")[0];
-      return key > today && key <= weekEnd;
-    })
-    .map((a) => ({
-      id: a.id,
-      date: a.date.toISOString().split("T")[0],
-      timeSlot: a.timeSlot,
-      clientName: a.clientName,
-    }));
-  const laterThisMonthCount = active.filter((a) => {
-    const key = a.date.toISOString().split("T")[0];
-    return key > weekEnd && key <= monthEnd;
-  }).length;
+  // Adelanto de lo que viene: "esta semana" (lista corta) y "resto del
+  // mes" (solo un conteo) ya vienen acotados y filtrados desde la base de
+  // datos. Prisma guarda la fecha como medianoche UTC, así que la clave
+  // del día sale del ISO directo — mismo patrón que ya usa /admin/agenda.
+  const thisWeek = thisWeekRows.map((a) => ({
+    id: a.id,
+    date: a.date.toISOString().split("T")[0],
+    timeSlot: a.timeSlot,
+    clientName: a.clientName,
+  }));
 
   // Citas de días anteriores que nunca se resolvieron: no aparecen en
   // Agenda (filtra date >= hoy) ni en Hoy (solo el día actual), así que
   // sin esto se pierden de vista aunque sigan activas en la base.
-  const overdue: OverdueAppointment[] = all
-    .filter((a) => {
-      const key = a.date.toISOString().split("T")[0];
-      return key < today && (a.status === "PENDIENTE" || a.status === "CONFIRMADA");
-    })
-    .map((a) => ({
-      id:           a.id,
-      clientName:   a.clientName,
-      clientPhone:  a.clientPhone,
-      timeSlot:     a.timeSlot,
-      status:       a.status,
-      notes:        a.notes,
-      serviceName:  a.service.name,
-      duration:     a.service.duration,
-      amountEarned: a.amountEarned,
-      date:         a.date.toISOString().split("T")[0],
-    }));
+  const overdue: OverdueAppointment[] = overdueRows.map((a) => ({
+    id:           a.id,
+    clientName:   a.clientName,
+    clientPhone:  a.clientPhone,
+    timeSlot:     a.timeSlot,
+    status:       a.status,
+    notes:        a.notes,
+    serviceName:  a.service.name,
+    duration:     a.service.duration,
+    amountEarned: a.amountEarned,
+    date:         a.date.toISOString().split("T")[0],
+  }));
 
   return (
     <>

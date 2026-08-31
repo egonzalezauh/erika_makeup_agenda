@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCompletedAppointments } from "@/actions/appointments";
+import { getCompletedAppointmentsInYear } from "@/actions/appointments";
 import { guayaquilDateString } from "@/lib/dates";
 import { formatCurrency } from "@/lib/utils";
 import RevenueChart from "@/components/admin/RevenueChart";
@@ -11,7 +11,7 @@ export default async function IngresosPage() {
   const today = guayaquilDateString();
   const [thisYear, thisMonth] = today.split("-"); // "YYYY-MM-DD" -> YYYY, MM
 
-  const completed = await getCompletedAppointments();
+  const completed = await getCompletedAppointmentsInYear(thisYear);
 
   let thisMonthTotal = 0;
   let thisYearTotal = 0;
@@ -19,13 +19,11 @@ export default async function IngresosPage() {
 
   for (const appointment of completed) {
     const amount = appointment.amountEarned ?? 0;
-    const [year, month] = appointment.date.toISOString().split("T")[0].split("-");
+    const month = appointment.date.toISOString().split("T")[0].split("-")[1];
 
-    if (year === thisYear) {
-      thisYearTotal += amount;
-      monthly[Number(month) - 1] += amount;
-    }
-    if (year === thisYear && month === thisMonth) {
+    thisYearTotal += amount;
+    monthly[Number(month) - 1] += amount;
+    if (month === thisMonth) {
       thisMonthTotal += amount;
     }
   }

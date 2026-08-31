@@ -115,24 +115,80 @@ export async function createAppointment(
   }
 }
 
-// No trae las ELIMINADA — "borrar" una cita desde el panel la saca de acá
-// (y por lo tanto de Hoy y Agenda, que se alimentan de esta función) sin
-// tocar la base de datos.
-export async function getAppointments() {
+// Citas activas desde `today` en adelante (sin límite superior — lo que
+// hay agendado a futuro es naturalmente acotado). Alimenta /admin/agenda.
+export async function getUpcomingAppointments(today: string) {
   return prisma.appointment.findMany({
-    where: { status: { not: "ELIMINADA" } },
+    where: { date: { gte: new Date(today) }, status: { not: "ELIMINADA" } },
     include: { service: true },
     orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
   });
 }
 
-// Citas completadas, con su monto — alimenta la pestaña Ingresos. Solo
-// lectura, sin envoltorio en admin.ts: la ruta ya está protegida por
-// proxy.ts, igual que getAppointments() en agenda/page.tsx.
-export async function getCompletedAppointments() {
+// Citas de días anteriores que nunca se resolvieron (ni se completaron ni
+// se cancelaron) — no aparecen en Agenda (filtra date >= hoy) ni en Hoy
+// (solo el día actual), así que sin esto se pierden de vista. Acotada por
+// status, así que en la práctica son pocas filas.
+export async function getOverdueAppointments(today: string) {
   return prisma.appointment.findMany({
-    where: { status: "COMPLETADA" },
+    where: {
+      date: { lt: new Date(today) },
+      status: { in: ["PENDIENTE", "CONFIRMADA"] },
+    },
     include: { service: true },
+    orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
+  });
+}
+
+// Adelanto de "esta semana" en la pestaña Hoy — solo los campos que
+// necesita UpcomingPreview, acotado a la semana (no toda la historia).
+export async function getUpcomingAppointmentsInRange(
+  fromExclusive: string,
+  toInclusive: string
+) {
+  const start = new Date(fromExclusive);
+  const end = new Date(toInclusive);
+  end.setDate(end.getDate() + 1); // toInclusive incluido
+
+  return prisma.appointment.findMany({
+    where: {
+      date: { gt: start, lt: end },
+      status: { notIn: INACTIVE_STATUSES },
+    },
+    select: { id: true, date: true, timeSlot: true, clientName: true },
+    orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
+  });
+}
+
+// Conteo de "resto del mes" en Hoy — solo el número, sin traer filas.
+export async function countAppointmentsInRange(
+  fromExclusive: string,
+  toInclusive: string
+) {
+  const start = new Date(fromExclusive);
+  const end = new Date(toInclusive);
+  end.setDate(end.getDate() + 1); // toInclusive incluido
+
+  return prisma.appointment.count({
+    where: {
+      date: { gt: start, lt: end },
+      status: { notIn: INACTIVE_STATUSES },
+    },
+  });
+}
+
+// Citas completadas del año dado, con su monto — alimenta la pestaña
+// Ingresos. Solo trae date/amountEarned (no el servicio, que esa pestaña
+// no usa). Solo lectura, sin envoltorio en admin.ts: la ruta ya está
+// protegida por proxy.ts, igual que getUpcomingAppointments() en
+// agenda/page.tsx.
+export async function getCompletedAppointmentsInYear(year: string) {
+  const start = new Date(`${year}-01-01`);
+  const end = new Date(`${Number(year) + 1}-01-01`);
+
+  return prisma.appointment.findMany({
+    where: { status: "COMPLETADA", date: { gte: start, lt: end } },
+    select: { date: true, amountEarned: true },
     orderBy: [{ date: "asc" }],
   });
 }

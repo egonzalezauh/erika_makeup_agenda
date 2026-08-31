@@ -68,5 +68,7 @@ model Appointment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@index([date])
+  @@index([status])
   @@map("appointments")
 }

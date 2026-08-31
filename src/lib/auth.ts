@@ -25,14 +25,22 @@ function getSecret(): string {
   return secret;
 }
 
-async function importKey(): Promise<CryptoKey> {
-  return crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(getSecret()),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"]
-  );
+// Memoizada a nivel de módulo — importar la clave desde el secreto es el
+// mismo resultado en cada llamada, y esto corre en proxy.ts en cada
+// navegación a /admin/*.
+let cachedKey: Promise<CryptoKey> | undefined;
+
+function importKey(): Promise<CryptoKey> {
+  if (!cachedKey) {
+    cachedKey = crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(getSecret()),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+  }
+  return cachedKey;
 }
 
 function toBase64Url(bytes: ArrayBuffer): string {
