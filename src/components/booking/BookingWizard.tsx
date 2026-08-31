@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useLayoutEffect } from "react";
 import Link from "next/link";
 import {
   CalendarGrid,
@@ -464,8 +464,10 @@ export function BookingWizard({
   appointments: PublicAppointment[];
 }) {
   const today = useMemo(() => new Date(), []);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState<WizardStep>(1);
+  const prevStepRef = useRef<WizardStep>(step);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth());
@@ -523,48 +525,60 @@ export function BookingWizard({
     return picked < todayMidnight;
   }
 
-  if (step === "bridge") {
-    return (
-      <div className="w-full max-w-5xl mx-auto">
+  // Al cambiar de paso el contenido puede volverse más corto (p. ej. calendario
+  // -> formulario de nombre). Si el usuario tenía scroll más abajo de esa nueva
+  // altura, el navegador lo recorta al fondo de la página. Reubicamos el scroll
+  // al inicio del wizard antes del paint para evitar ese salto visible.
+  useLayoutEffect(() => {
+    if (prevStepRef.current === step) return;
+    prevStepRef.current = step;
+    const el = containerRef.current;
+    if (!el) return;
+    const NAVBAR_OFFSET = 96; // altura del navbar fijo (pt-24 en booking/page.tsx)
+    const top = el.getBoundingClientRect().top + window.scrollY - NAVBAR_OFFSET;
+    window.scrollTo({ top: Math.max(top, 0), behavior: "instant" });
+  }, [step]);
+
+  return (
+    <div ref={containerRef} className="w-full max-w-5xl mx-auto">
+      {step === "bridge" ? (
         <WhatsAppBridge
           service={selectedService}
           date={selectedDate!}
           time={selectedTime!}
           onBack={() => setStep(2)}
         />
-      </div>
-    );
-  }
+      ) : (
+        <>
+          <StepIndicator current={step} />
 
-  return (
-    <div className="w-full max-w-5xl mx-auto">
-      <StepIndicator current={step} />
+          {step === 1 && (
+            <Step1Services
+              services={services}
+              selected={selectedServiceId}
+              onSelect={setSelectedServiceId}
+              onNext={() => setStep(2)}
+            />
+          )}
 
-      {step === 1 && (
-        <Step1Services
-          services={services}
-          selected={selectedServiceId}
-          onSelect={setSelectedServiceId}
-          onNext={() => setStep(2)}
-        />
-      )}
-
-      {step === 2 && (
-        <Step2DateTime
-          year={calYear}
-          month={calMonth}
-          today={today}
-          selectedDate={selectedDate}
-          selectedTime={selectedTime}
-          onSelectDate={handleSelectDate}
-          onSelectTime={setSelectedTime}
-          onPrevMonth={handlePrevMonth}
-          onNextMonth={handleNextMonth}
-          isDisabled={isDateDisabled}
-          onBack={() => setStep(1)}
-          onNext={() => setStep("bridge")}
-          appointmentsByDate={appointmentsByDate}
-        />
+          {step === 2 && (
+            <Step2DateTime
+              year={calYear}
+              month={calMonth}
+              today={today}
+              selectedDate={selectedDate}
+              selectedTime={selectedTime}
+              onSelectDate={handleSelectDate}
+              onSelectTime={setSelectedTime}
+              onPrevMonth={handlePrevMonth}
+              onNextMonth={handleNextMonth}
+              isDisabled={isDateDisabled}
+              onBack={() => setStep(1)}
+              onNext={() => setStep("bridge")}
+              appointmentsByDate={appointmentsByDate}
+            />
+          )}
+        </>
       )}
     </div>
   );
