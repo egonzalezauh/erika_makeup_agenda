@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarDays, DollarSign, Plus, Sun } from "lucide-react";
+import { CalendarDays, DollarSign, Plus, Sun, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/admin",          label: "Hoy",      Icon: Sun },
   { href: "/admin/nueva",    label: "Agendar",  Icon: Plus },
   { href: "/admin/agenda",   label: "Agenda",   Icon: CalendarDays },
+  { href: "/admin/clientes", label: "Clientes", Icon: Users },
   { href: "/admin/ingresos", label: "Ingresos", Icon: DollarSign },
 ];
 

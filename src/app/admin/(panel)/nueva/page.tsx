@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getServices } from "@/actions/appointments";
+import { getClients } from "@/actions/clients";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentForm from "@/components/admin/AppointmentForm";
 
@@ -7,7 +8,7 @@ export const metadata: Metadata = { title: "Agendar" };
 export const dynamic = "force-dynamic";
 
 export default async function NewAppointmentPage() {
-  const services = await getServices();
+  const [services, clients] = await Promise.all([getServices(), getClients()]);
 
   return (
     <>
@@ -23,6 +24,12 @@ export default async function NewAppointmentPage() {
           id: s.id,
           name: s.name,
           duration: s.duration,
+        }))}
+        clients={clients.map((c) => ({
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          email: c.email,
         }))}
         initial={{
           serviceId:   "",

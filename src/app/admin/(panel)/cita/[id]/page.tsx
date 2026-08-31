@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getAppointmentById, getServices } from "@/actions/appointments";
+import { getClients } from "@/actions/clients";
 import AppointmentForm from "@/components/admin/AppointmentForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 
@@ -13,9 +14,10 @@ export default async function EditAppointmentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [appointment, services] = await Promise.all([
+  const [appointment, services, clients] = await Promise.all([
     getAppointmentById(id),
     getServices(),
+    getClients(),
   ]);
 
   if (!appointment) notFound();
@@ -42,6 +44,12 @@ export default async function EditAppointmentPage({
           id: s.id,
           name: s.name,
           duration: s.duration,
+        }))}
+        clients={clients.map((c) => ({
+          id: c.id,
+          name: c.name,
+          phone: c.phone,
+          email: c.email,
         }))}
         initial={{
           serviceId: appointment.serviceId,

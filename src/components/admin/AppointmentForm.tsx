@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { adminCreateAppointment, adminUpdateAppointment } from "@/actions/admin";
 import { BUSINESS_TIME_SLOTS } from "@/lib/time";
 import { formatTime } from "@/lib/utils";
+import ClientPicker, { type ClientOption } from "@/components/admin/ClientPicker";
 
 export type ServiceOption = { id: string; name: string; duration: number };
 
@@ -30,11 +31,13 @@ const LABEL =
 // arreglar algo en uno deje el otro atrás.
 export default function AppointmentForm({
   services,
+  clients,
   initial,
   appointmentId,
   submitLabel,
 }: {
   services: ServiceOption[];
+  clients: ClientOption[];
   initial: AppointmentFormValues;
   /** Presente = editar una cita existente; ausente = crear una nueva. */
   appointmentId?: string;
@@ -60,6 +63,11 @@ export default function AppointmentForm({
       serviceId:   String(form.get("serviceId") ?? ""),
       notes:       String(form.get("notes") ?? "").trim() || undefined,
     };
+
+    if (!values.clientName) {
+      setError("Elige o crea una clienta antes de guardar.");
+      return;
+    }
 
     startTransition(async () => {
       const result = appointmentId
@@ -134,39 +142,14 @@ export default function AppointmentForm({
         </label>
       </div>
 
-      <label className="flex flex-col gap-2">
-        <span className={LABEL}>Nombre de la clienta</span>
-        <input
-          type="text"
-          name="clientName"
-          required
-          defaultValue={initial.clientName}
-          className={FIELD}
-        />
-      </label>
-
-      <label className="flex flex-col gap-2">
-        <span className={LABEL}>Teléfono (Opcional)</span>
-        <input
-          type="tel"
-          name="clientPhone"
-          inputMode="tel"
-          placeholder="0991234567"
-          defaultValue={initial.clientPhone}
-          className={FIELD}
-        />
-      </label>
-
-      <label className="flex flex-col gap-2">
-        <span className={LABEL}>Correo (opcional)</span>
-        <input
-          type="email"
-          name="clientEmail"
-          inputMode="email"
-          defaultValue={initial.clientEmail}
-          className={FIELD}
-        />
-      </label>
+      <ClientPicker
+        clients={clients}
+        initial={{
+          name:  initial.clientName,
+          phone: initial.clientPhone,
+          email: initial.clientEmail,
+        }}
+      />
 
       <label className="flex flex-col gap-2">
         <span className={LABEL}>Notas (opcional)</span>

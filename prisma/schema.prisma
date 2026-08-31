@@ -29,6 +29,24 @@ model Service {
   @@map("services")
 }
 
+// ─── Modelo: Clienta ─────────────────────────────────────────────
+// Catálogo de clientas guardadas de antemano, para elegirlas al agendar
+// una cita en vez de escribir sus datos a mano cada vez. Sin relación a
+// Appointment: cada cita conserva su propia copia de nombre/teléfono/
+// correo al momento de agendarla (igual que antes de este modelo).
+model Client {
+  id    String  @id @default(uuid())
+  name  String
+  phone String?
+  email String?
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("clients")
+}
+
 // ─── Modelo: Cita ────────────────────────────────────────────────
 // Representa una cita agendada por un cliente.
 // status: PENDIENTE | CONFIRMADA | CANCELADA | COMPLETADA
