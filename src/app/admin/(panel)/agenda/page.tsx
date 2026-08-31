@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getUpcomingAppointments } from "@/actions/appointments";
+import { getUpcomingAppointments } from "@/lib/appointments-data";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,

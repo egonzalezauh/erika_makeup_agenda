@@ -3,7 +3,7 @@ import {
   getOverdueAppointments,
   getUpcomingAppointmentsInRange,
   countAppointmentsInRange,
-} from "@/actions/appointments";
+} from "@/lib/appointments-data";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentCard, {
   type AppointmentCardData,

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicServices } from "@/actions/appointments";
+import { getPublicServices } from "@/lib/appointments-data";
 
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -38,8 +38,8 @@ const SERVICE_IMAGES: Record<string, [ServiceImage, ServiceImage, ServiceImage]>
   ],
 };
 
-// Orden de despliegue en el home (distinto del orden alfabético que usan el
-// bot de Telegram y el wizard de reservas, que vienen de getServices()).
+// Orden de despliegue en el home (distinto del orden alfabético que usa el
+// wizard de reservas, que viene de getServices()).
 const DISPLAY_ORDER = [
   "Maquillaje y Peinado de Novia",
   "Maquillaje y Peinado de Quinceañera",

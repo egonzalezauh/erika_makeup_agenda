@@ -30,8 +30,8 @@ type WizardStep = 1 | 2 | "bridge";
 
 // Por ahora solo se marcan como ocupadas las horas que dura cada cita ya
 // agendada (igual que en /calendario) — sin proyectar hacia adelante según
-// la duración del servicio que se está por agendar. El bot de Telegram sigue
-// validando choques reales al confirmar la cita.
+// la duración del servicio que se está por agendar. Esta pantalla es solo
+// orientativa: el choque real se valida al registrar la cita en /admin.
 function isSlotBusy(slot: string, dayAppointments: PublicAppointment[]): boolean {
   const t = timeToMinutes(slot);
   return dayAppointments.some((appt) => {

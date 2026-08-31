@@ -8,14 +8,23 @@ import {
   updateAppointmentStatus,
   type CreateAppointmentInput,
   type UpdateAppointmentInput,
-} from "@/actions/appointments";
+} from "@/lib/appointments-data";
+import {
+  appointmentStatusSchema,
+  createAppointmentSchema,
+  updateAppointmentSchema,
+  firstIssue,
+} from "@/lib/schemas";
 
-// Envoltorios autenticados de las acciones de datos.
+// Único punto por donde el navegador puede escribir citas.
 //
-// `appointments.ts` sigue siendo la capa de acceso a datos y no valida
-// sesión, porque el webhook de Telegram la usa con su propia autenticación
-// (secret header + whitelist de chat IDs). El panel /admin entra por aquí,
-// donde cada escritura exige cookie de administradora antes de tocar la BD.
+// La capa de datos (`lib/appointments-data.ts`) son funciones normales de
+// servidor, no Server Actions: no existen como endpoint HTTP. Todo lo que el
+// cliente puede invocar pasa por aquí, y aquí se hacen las dos comprobaciones
+// que la capa de datos no hace — sesión y validación de los datos.
+//
+// Si agregas una acción que escribe, va en este archivo y empieza por
+// requireAdmin(). No pongas "use server" en los archivos de lib/.
 
 export async function adminUpdateAppointmentStatus(
   id: string,
@@ -23,7 +32,17 @@ export async function adminUpdateAppointmentStatus(
   amountEarned?: number
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const result = await updateAppointmentStatus(id, status, amountEarned);
+
+  const parsed = appointmentStatusSchema.safeParse({ id, status, amountEarned });
+  if (!parsed.success) {
+    return { success: false, error: firstIssue(parsed.error) };
+  }
+
+  const result = await updateAppointmentStatus(
+    parsed.data.id,
+    parsed.data.status,
+    parsed.data.amountEarned
+  );
   if (result.success) revalidatePath("/admin", "layout");
   return result;
 }
@@ -32,7 +51,13 @@ export async function adminCreateAppointment(
   data: CreateAppointmentInput
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const result = await createAppointment(data);
+
+  const parsed = createAppointmentSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: firstIssue(parsed.error) };
+  }
+
+  const result = await createAppointment(parsed.data);
   if (result.success) revalidatePath("/admin", "layout");
   return result;
 }
@@ -42,7 +67,18 @@ export async function adminUpdateAppointment(
   data: UpdateAppointmentInput
 ): Promise<{ success: boolean; error?: string }> {
   await requireAdmin();
-  const result = await updateAppointment(id, data);
+
+  const parsedId = appointmentStatusSchema.shape.id.safeParse(id);
+  if (!parsedId.success) {
+    return { success: false, error: firstIssue(parsedId.error) };
+  }
+
+  const parsed = updateAppointmentSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: firstIssue(parsed.error) };
+  }
+
+  const result = await updateAppointment(parsedId.data, parsed.data);
   if (result.success) revalidatePath("/admin", "layout");
   return result;
 }

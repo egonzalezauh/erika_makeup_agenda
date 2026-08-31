@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getCompletedAppointmentsInYear } from "@/actions/appointments";
+import { getCompletedAppointmentsInYear } from "@/lib/appointments-data";
 import { guayaquilDateString } from "@/lib/dates";
 import { formatCurrency } from "@/lib/utils";
 import RevenueChart from "@/components/admin/RevenueChart";

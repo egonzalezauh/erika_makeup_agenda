@@ -1,4 +1,14 @@
-"use server";
+// Capa de acceso a datos de citas.
+//
+// Este archivo NO lleva "use server" a propósito, y no debe llevarlo nunca.
+// Toda función exportada desde un archivo "use server" queda accesible como
+// endpoint HTTP desde cualquier página que importe el archivo — incluidas las
+// públicas (/, /booking, /calendario), que `proxy.ts` no protege. Basta con
+// que una sola página pública use una sola función para exponer las demás.
+//
+// Al ser funciones normales, solo se pueden llamar desde el servidor. Las
+// escrituras se exponen al navegador únicamente vía `actions/admin.ts`, que
+// exige sesión de administradora con `requireAdmin()`.
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
@@ -179,9 +189,7 @@ export async function countAppointmentsInRange(
 
 // Citas completadas del año dado, con su monto — alimenta la pestaña
 // Ingresos. Solo trae date/amountEarned (no el servicio, que esa pestaña
-// no usa). Solo lectura, sin envoltorio en admin.ts: la ruta ya está
-// protegida por proxy.ts, igual que getUpcomingAppointments() en
-// agenda/page.tsx.
+// no usa).
 export async function getCompletedAppointmentsInYear(year: string) {
   const start = new Date(`${year}-01-01`);
   const end = new Date(`${Number(year) + 1}-01-01`);
@@ -218,21 +226,6 @@ export async function getAppointmentsByDate(date: string) {
     include: { service: true },
     orderBy: { timeSlot: "asc" },
   });
-}
-
-// Case-insensitive partial match on clientName — used by the Telegram bot
-// to resolve "confirmar/cancelar/completar/reabrir <texto>" commands.
-// Filtered in JS (not via Prisma's `mode: "insensitive"`) so this works
-// identically on both SQLite (dev) and PostgreSQL (prod) — SQLite's Prisma
-// connector doesn't support query-level case-insensitive filters.
-export async function searchAppointmentsByClientName(query: string) {
-  const needle = query.trim().toLowerCase();
-  const all = await prisma.appointment.findMany({
-    where: { status: { not: "ELIMINADA" } },
-    include: { service: true },
-    orderBy: [{ date: "asc" }, { timeSlot: "asc" }],
-  });
-  return all.filter((a) => a.clientName.toLowerCase().includes(needle));
 }
 
 export async function updateAppointmentStatus(
@@ -356,8 +349,7 @@ export async function updateAppointment(
 // ─── Servicios ────────────────────────────────────────────────────
 
 // Trae todos los servicios, incluidos los que solo debe ver la dueña.
-// Usado por /admin/nueva, /admin/cita/[id] y el bot de Telegram — ninguno
-// de los tres es de cara al público.
+// Usado por /admin/nueva y /admin/cita/[id] — ninguno de cara al público.
 export async function getServices() {
   return prisma.service.findMany({
     orderBy: { name: "asc" },

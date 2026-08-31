@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getClients } from "@/actions/clients";
+import { getClients } from "@/lib/clients-data";
 import ClientList from "@/components/admin/ClientList";
 
 export const metadata: Metadata = { title: "Clientes" };

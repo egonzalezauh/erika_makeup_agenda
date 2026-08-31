@@ -3,11 +3,15 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/actions/auth";
+import { clientIdSchema, clientSchema, firstIssue } from "@/lib/schemas";
 
-// Solo lo usa el panel /admin — a diferencia de appointments.ts, no hay
-// un segundo consumidor sin sesión (el bot de Telegram no toca clientas),
-// así que las escrituras validan admin directo acá en vez de un archivo
-// admin.ts aparte que envuelva esto.
+// Escrituras del catálogo de clientas, invocadas desde ClientForm y
+// ClientPicker (componentes de navegador). Las lecturas viven en
+// `lib/clients-data.ts` como funciones normales, para no publicarlas como
+// endpoint HTTP.
+//
+// requireAdmin() va FUERA del try: si quedara dentro, su excepción caería en
+// el catch y la denegación de acceso se mostraría como un error de guardado.
 
 export type CreateClientInput = {
   name:  string;
@@ -18,26 +22,23 @@ export type CreateClientInput = {
 
 export type UpdateClientInput = CreateClientInput;
 
-export async function getClients() {
-  return prisma.client.findMany({ orderBy: { name: "asc" } });
-}
-
-export async function getClientById(id: string) {
-  return prisma.client.findUnique({ where: { id } });
-}
-
 export async function createClient(
   data: CreateClientInput
 ): Promise<{ success: boolean; error?: string; client?: { id: string; name: string; phone: string | null; email: string | null } }> {
-  try {
-    await requireAdmin();
+  await requireAdmin();
 
+  const parsed = clientSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: firstIssue(parsed.error) };
+  }
+
+  try {
     const client = await prisma.client.create({
       data: {
-        name:  data.name,
-        phone: data.phone || null,
-        email: data.email || null,
-        notes: data.notes || null,
+        name:  parsed.data.name,
+        phone: parsed.data.phone || null,
+        email: parsed.data.email || null,
+        notes: parsed.data.notes || null,
       },
     });
 
@@ -53,21 +54,31 @@ export async function updateClient(
   id:   string,
   data: UpdateClientInput
 ): Promise<{ success: boolean; error?: string }> {
-  try {
-    await requireAdmin();
+  await requireAdmin();
 
-    const existing = await prisma.client.findUnique({ where: { id } });
+  const parsedId = clientIdSchema.safeParse(id);
+  if (!parsedId.success) {
+    return { success: false, error: firstIssue(parsedId.error) };
+  }
+
+  const parsed = clientSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: firstIssue(parsed.error) };
+  }
+
+  try {
+    const existing = await prisma.client.findUnique({ where: { id: parsedId.data } });
     if (!existing) {
       return { success: false, error: "Clienta no encontrada." };
     }
 
     await prisma.client.update({
-      where: { id },
+      where: { id: parsedId.data },
       data: {
-        name:  data.name,
-        phone: data.phone || null,
-        email: data.email || null,
-        notes: data.notes || null,
+        name:  parsed.data.name,
+        phone: parsed.data.phone || null,
+        email: parsed.data.email || null,
+        notes: parsed.data.notes || null,
       },
     });
 

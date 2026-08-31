@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getAppointmentById, getServices } from "@/actions/appointments";
-import { getClients } from "@/actions/clients";
+import { getAppointmentById, getServices } from "@/lib/appointments-data";
+import { getClients } from "@/lib/clients-data";
 import AppointmentForm from "@/components/admin/AppointmentForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 

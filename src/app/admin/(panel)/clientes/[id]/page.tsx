@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getClientById } from "@/actions/clients";
+import { getClientById } from "@/lib/clients-data";
 import ClientForm from "@/components/admin/ClientForm";
 
 export const metadata: Metadata = { title: "Editar clienta" };

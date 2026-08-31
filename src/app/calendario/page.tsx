@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { getPublicAppointmentAvailability } from "@/actions/appointments";
+import { getPublicAppointmentAvailability } from "@/lib/appointments-data";
 import { AvailabilityCalendar } from "@/components/calendario/AvailabilityCalendar";
 
 // Always fetch live availability — this page must never serve a stale,
-// statically-cached snapshot, since appointments can change via the
-// Telegram bot at any time.
+// statically-cached snapshot, since appointments can change from the admin
+// panel at any time.
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { getServices } from "@/actions/appointments";
-import { getClients } from "@/actions/clients";
+import { getServices } from "@/lib/appointments-data";
+import { getClients } from "@/lib/clients-data";
 import { guayaquilDateString } from "@/lib/dates";
 import AppointmentForm from "@/components/admin/AppointmentForm";
 

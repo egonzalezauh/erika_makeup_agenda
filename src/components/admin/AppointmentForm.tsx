@@ -76,7 +76,7 @@ export default function AppointmentForm({
             ...values,
             // Si la dueña la registra a mano es porque ya la acordó con la
             // clienta — no tiene sentido que nazca PENDIENTE de su propia
-            // confirmación. Mismo criterio que usaba el bot de Telegram.
+            // confirmación.
             status: "CONFIRMADA",
           });
 

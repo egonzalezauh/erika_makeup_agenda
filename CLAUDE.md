@@ -18,7 +18,7 @@ npx prisma studio                       # GUI to browse the database
 
 ## Stack
 
-- **Next.js 16.2.9** — App Router, `src/` directory, React 19
+- **Next.js 16.3.3** — App Router, `src/` directory, React 19
 - **Tailwind CSS v4** — CSS-first; all theme tokens live in `src/app/globals.css` under `@theme {}`. There is **no** `tailwind.config.ts`.
 - **Prisma v5.22.0 + PostgreSQL (Supabase)** — `schema.prisma` ya apunta a `postgresql` con `directUrl`; no hay SQLite local. Tanto dev como prod usan `DATABASE_URL` / `DIRECT_URL`.
 - **Fonts** — Cormorant Garamond (serif, `font-serif`) + DM Sans (sans-serif, `font-sans`), loaded via `next/font/google` in `layout.tsx`, exposed as CSS variables `--font-cormorant` / `--font-dm-sans`.
@@ -26,7 +26,11 @@ npx prisma studio                       # GUI to browse the database
 ## Architecture
 
 ### Data flow
-Server Actions in `src/actions/appointments.ts` are the only data-access layer. They call the Prisma singleton from `src/lib/prisma.ts` and call `revalidatePath("/calendario")` after mutations. There is **no authentication anywhere in the public app** — `createAppointment` and `updateAppointmentStatus` are not called by any page UI (the booking flow no longer writes to the DB); they're called exclusively by the Telegram bot webhook (`src/app/api/telegram/webhook/route.ts`), which is the only way appointments actually get created/changed. Bot access is gated by `TELEGRAM_ADMIN_CHAT_IDS` (comma-separated whitelist) and `TELEGRAM_WEBHOOK_SECRET` (request authenticity), not by the app's page routing.
+La capa de acceso a datos es `src/lib/appointments-data.ts` y `src/lib/clients-data.ts`. Llaman al singleton de Prisma de `src/lib/prisma.ts` y hacen `revalidatePath("/calendario")` tras cada mutación.
+
+**Viven en `src/lib/` y no en `src/actions/` por seguridad, no por gusto.** Un archivo con `"use server"` publica *todas* sus funciones exportadas como endpoints HTTP, alcanzables desde cualquier página que importe el archivo — incluidas las públicas, que `proxy.ts` no cubre. Como funciones normales, solo se pueden llamar desde el servidor. **No les pongas `"use server"`.**
+
+Las páginas del panel (Server Components) las llaman directo. Los componentes de navegador escriben solo a través de `src/actions/admin.ts` y `src/actions/clients.ts`, que exigen `requireAdmin()` y validan sus entradas con Zod (`src/lib/schemas.ts`).
 
 ### Component split
 - **Async Server Components** fetch data directly: `ServicesSection`, `src/app/booking/page.tsx`, `src/app/calendario/page.tsx`
@@ -39,13 +43,11 @@ Server Actions in `src/actions/appointments.ts` are the only data-access layer. 
 | `/` | Marketing home page (Hero → Services → Gallery → Ticker → Footer) |
 | `/booking` | 2-step booking bridge (service → date/time), ends with a `wa.me` link pre-filled with the request — does not write to the DB |
 | `/calendario` | Public availability calendar — shows busy/free slots only (no client PII), no login required |
-| `/api/telegram/webhook` | POST-only Route Handler for the Telegram bot (see below) — not a page |
 
 ### Panel de administración (Fase 3)
 
 La dueña gestiona sus citas desde `/admin`, un panel mobile-first pensado para
-usarse instalado como app en el celular. Reemplaza al bot de Telegram como
-interfaz principal.
+usarse instalado como app en el celular. Es la única interfaz de gestión.
 
 **Separación de zonas.** Un solo deploy sirve dos zonas:
 
@@ -69,10 +71,15 @@ no `node:crypto`, porque `proxy.ts` corre en el runtime Edge.
 solapamientos — si no, guardar sin mover el horario chocaría consigo misma.
 
 **`src/actions/admin.ts`** son envoltorios autenticados de `appointments.ts`.
-La capa de datos sigue sin validar sesión porque el webhook de Telegram la usa
-con su propia autenticación; el panel entra por los envoltorios, que llaman a
-`requireAdmin()` antes de escribir. Las Server Actions se invocan por POST desde
-el cliente, así que esta verificación es necesaria además del `proxy.ts`.
+Las Server Actions se invocan por POST desde el cliente sin pasar por el
+enrutado de páginas, así que `requireAdmin()` es necesario **además** del
+`proxy.ts` — el proxy no las ve. Cada acción valida además sus entradas con
+los esquemas de `src/lib/schemas.ts`; los tipos de TypeScript desaparecen al
+compilar y no validan nada en runtime.
+
+`src/app/admin/(panel)/layout.tsx` repite la verificación de sesión a
+propósito: `proxy.ts` es un único punto de fallo, y saltárselo ha sido una
+vulnerabilidad real de Next.js más de una vez.
 
 **PWA.** `src/app/manifest.ts` hace la app instalable (`start_url: "/admin"`,
 `display: "standalone"`), con íconos en `public/icons/`. Es también la base
@@ -85,9 +92,6 @@ sobre la que se empaqueta el `.apk` de Android.
 | `/admin/agenda` | Próximas citas agrupadas por día |
 | `/admin/cita/[id]` | Editar y reprogramar (no toca el estado) |
 | `/admin/login` | Contraseña única |
-
-### Telegram bot (Fase 2)
-The business owner manages appointments by chatting with a private Telegram bot (not client-facing). `src/app/api/telegram/webhook/route.ts` receives every message, checks the `X-Telegram-Bot-Api-Secret-Token` header against `TELEGRAM_WEBHOOK_SECRET`, ignores any chat ID that isn't `TELEGRAM_ADMIN_CHAT_ID`, parses the text via the pure parser in `src/lib/telegram/commands.ts`, dispatches to `appointments.ts`, and replies via `src/lib/telegram/client.ts` (`sendMessage`, plain text, no `parse_mode`). Fixed keyword grammar: `ayuda`, `servicios`, `citas hoy|mañana|YYYY-MM-DD`, `confirmar|cancelar|completar|reabrir <nombre>` (fuzzy match via `searchAppointmentsByClientName`, replies with a disambiguation list if 2+ matches instead of guessing), and a multi-line `agendar` block (`servicio:`/`fecha:`/`hora:`/`nombre:`/`telefono:`/optional `email:`/`notas:`) — appointments created this way default to `CONFIRMADA` status (not `PENDIENTE`), since the owner is registering something already agreed with the client. "Hoy"/"mañana" are resolved in `src/lib/dates.ts` (`guayaquilDateString()`) pinned to `America/Guayaquil`, independent of the server's own timezone (Vercel runs UTC).
 
 ## Images
 

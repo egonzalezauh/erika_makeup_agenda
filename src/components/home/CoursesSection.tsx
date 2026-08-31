@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { getPublicServices } from "@/actions/appointments";
+import { getPublicServices } from "@/lib/appointments-data";
 
 export async function CoursesSection() {
   const services = await getPublicServices();
